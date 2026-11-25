@@ -8,7 +8,7 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/uzelezz123/Z-City?style=flat)](https://github.com/uzelezz123/Z-City)
 ![Discord](https://img.shields.io/discord/1271789595125743727)
 
-*Z-City is a GMod addon which modifies character damage and controls. It also features its own custom weapon base and a dedicated gamemode.*
+*yo hi its catatonia zcity fork yooo fully vibe coded hi*
 
 </div>
 
@@ -33,23 +33,6 @@ Our versioning system follows the **`A.B.cc`** format:
 * **`A`** - Global updates
 * **`B`** - New mechanics and gameplay changes
 * **`cc`** - Fixes and other minor improvements
-
----
-
-## 💖 Support Us
-
-If you want to support the development, you can use the links below:
-
-**Donations:**
-- [💳 YooMoney](https://yoomoney.ru/fundraise/17GFEQH326Q.250101) 
-- [🚀 Boosty](https://boosty.to/sadsalat/donate)
-
-**Crypto:**
-| Currency | Address |
-| :--- | :--- |
-| **USDT (TRC20)** | `TYgpaZgHQr6qEgemhHzVvV7AQESiyhHpZD` |
-| **BTC** | `bc1qa8pk9ag6xa5yav2mvlxkra8xk25lg3htgfqh5w` |
-| **ETH (ERC20)** | `0x72AdCCcCEB4E323C64bCF0955A779DD9298E9483` |
 
 ---
 
