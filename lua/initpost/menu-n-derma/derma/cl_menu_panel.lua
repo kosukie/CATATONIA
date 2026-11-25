@@ -97,8 +97,8 @@ local splasheh = {
     'THE TRAITOR WAS KILLED',
     'NAB HOMICIDE SERVER',
     'ALSO TRY MODDED HOMICIDE 2',
-    'HOP ON Z-CITY',
-    'JOHN Z-CITY',
+    'HOP ON CATATONIA',
+    'JOHN CATATONIA',
     ':pluvrare:',
     'SAW51 IS REAL',
     'MORE SMALLTOWN',
@@ -142,8 +142,8 @@ function PANEL:InitializeMarkup()
 	end
 	local gm = splasheh[math.random(#splasheh)] .. " | " .. string.NiceName(mapname) 
 
-    if hg.PluvTown.Active then
-        local text = "<font=AoM_MM_Title><colour=210,210,210>    </colour>City</font>\n<font=ZCity_Tiny><colour=105,105,105>" .. gm .. "</colour></font>"
+    if hg.PluvTown and hg.PluvTown.Active then
+        local text = "<font=AoM_MM_Title><colour=210,210,210>CATATONIA</colour></font>\n<font=ZCity_Tiny><colour=105,105,105>" .. gm .. "</colour></font>"
 
         self.SelectedPluv = table.Random(hg.PluvTown.PluvMats)
 
@@ -204,9 +204,12 @@ function PANEL:Init()
     bottomDock:SetSize(ScreenScale(190), ScreenScaleH(40))
     bottomDock.Paint = function(this, w, h) end
     self.panelparrent = vgui.Create("DPanel", self)
-    self.panelparrent:SetPos(bottomDock:GetWide()+bottomDock:GetX(), 0)
-    self.ModelW = ScrW() * 0.40
-    self.panelparrent:SetSize(ScrW() - bottomDock:GetWide()*1, ScrH())
+    -- Исходная ширина и позиция по центру: подменю (Settings/Appearance) рисуются
+    -- на всю ширину panelparrent, поэтому не должны сжиматься правой модельной панелью
+    self.ModelW = ScrW() * 0.32
+    self.panelparrent:SetSize(ScrW(), ScrH())
+    self.panelparrent:SetPos(0, 0)
+    self.panelparrent:Center()
     self.panelparrent.Paint = function(this, w, h) end
     
     local git = vgui.Create("DLabel", bottomDock)
@@ -246,15 +249,15 @@ function PANEL:Init()
 end
 
 function PANEL:CreateModelPanel()
-    local mdlW = self.ModelW or ScrW() * 0.40
+    local mdlW = self.ModelW or ScrW() * 0.32
     local mp = vgui.Create("DModelPanel", self)
     self.ModelPanel = mp
     mp:SetSize(mdlW, ScrH())
     mp:SetPos(ScrW() - mdlW, 0)
-    mp:SetFOV(60)
-    -- Closer camera so the model fills ~65-70% of screen height
-    mp:SetCamPos(Vector(52, 0, 48))
-    mp:SetLookAt(Vector(0, 0, 36))
+    mp:SetFOV(55)
+    -- Closer camera so the model fills ~70% of screen height on the right side
+    mp:SetCamPos(Vector(38, 0, 46))
+    mp:SetLookAt(Vector(0, 0, 38))
     -- Cold, dim, moody lighting
     mp:SetDirectionalLight(BOX_TOP, Color(110, 120, 150))
     mp:SetDirectionalLight(BOX_FRONT, Color(45, 48, 55))
@@ -423,42 +426,54 @@ function PANEL:AddSelect( pParent, strTitle, tbl )
     btn:DockMargin(ScreenScale(15),ScreenScale(1.5),0,0)
     btn.Func = tbl.Func
     btn.HoveredFunc = tbl.HoveredFunc
-    local luaMenu = self 
+    local luaMenu = self
     if tbl.CreatedFunc then tbl.CreatedFunc(btn, self, luaMenu) end
     btn.RColor = Color(225,225,225)
+
+    -- Восстанавливает panelparrent с исходной шириной и позицией по центру,
+    -- чтобы окна Settings/Appearance не сжимались и вёрстка не наезжала друг на друга
+    local function ResetPanelParent(menu)
+        menu.panelparrent = vgui.Create("DPanel", menu)
+        menu.panelparrent:SetSize(ScrW(), ScrH())
+        menu.panelparrent:SetPos(0, 0)
+        menu.panelparrent:Center()
+        menu.panelparrent.Paint = function(this, w, h) end
+        return menu.panelparrent
+    end
+
     function btn:DoClick()
         -- ,kz оптимизировать надо, но идёт ошибка(кэшировать бы luaMenu.panelparrent вместо вызова его каждый раз)
         if curent_panel == string.lower(strTitle) then
 			for i = 1, 3 do
 				surface.PlaySound("shitty/tap_release.wav")
 			end
-            luaMenu.panelparrent:AlphaTo(0,0.2,0,function()
-                luaMenu.panelparrent:Remove()
-                luaMenu.panelparrent = nil
-                luaMenu.panelparrent = vgui.Create("DPanel", luaMenu)
-                
-                luaMenu.panelparrent:SetPos(some_coordinates_x, 0)
-                luaMenu.panelparrent:SetSize(some_size_x, some_size_y)
-                luaMenu.panelparrent.Paint = function(this, w, h) end
-                --btn.Func(luaMenu,luaMenu.panelparrent)
+            local old = luaMenu.panelparrent
+            if IsValid(old) then
+                old:AlphaTo(0,0.2,0,function()
+                    if IsValid(old) then old:Remove() end
+                    ResetPanelParent(luaMenu)
+                    curent_panel = nil
+                end)
+            else
+                ResetPanelParent(luaMenu)
                 curent_panel = nil
-            end)
-            return 
+            end
+            return
         end
-        some_size_x = luaMenu.panelparrent:GetWide()
-        some_size_y = luaMenu.panelparrent:GetTall()
-        some_coordinates_x = luaMenu.panelparrent:GetX()
-        luaMenu.panelparrent:AlphaTo(0,0.2,0,function()
-            luaMenu.panelparrent:Remove()
-            luaMenu.panelparrent = nil
-            luaMenu.panelparrent = vgui.Create("DPanel", luaMenu)
-            
-            luaMenu.panelparrent:SetPos(some_coordinates_x, 0)
-            luaMenu.panelparrent:SetSize(some_size_x, some_size_y)
-            luaMenu.panelparrent.Paint = function(this, w, h) end
-            btn.Func(luaMenu,luaMenu.panelparrent)
+        local old = luaMenu.panelparrent
+        local function OpenSubMenu()
+            if IsValid(old) then old:Remove() end
+            local pp = ResetPanelParent(luaMenu)
+            pp:SetAlpha(0)
+            btn.Func(luaMenu,pp)
+            pp:AlphaTo(255,0.2,0)
             curent_panel = string.lower(strTitle)
-        end)
+        end
+        if IsValid(old) then
+            old:AlphaTo(0,0.2,0,OpenSubMenu)
+        else
+            OpenSubMenu()
+        end
 		for i = 1, 3 do
 			surface.PlaySound("shitty/tap_depress.wav")
 		end
@@ -501,6 +516,7 @@ function PANEL:AddSelect( pParent, strTitle, tbl )
 end
 
 function PANEL:Close()
+    curent_panel = nil
     self:AlphaTo( 0, 0.1, 0, function() self:Remove() end)
     self:SetKeyboardInputEnabled(false)
     self:SetMouseInputEnabled(false)
