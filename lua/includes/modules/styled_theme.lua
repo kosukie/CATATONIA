@@ -15,22 +15,22 @@ do
 
     local colors = StyledTheme.colors or {}
 
-    colors.accent = Color( 56, 113, 179 )
-    colors.panelBackground = Color( 46, 46, 46, 240 )
-    colors.panelDisabledBackground = Color( 90, 90, 90, 255 )
+    colors.accent = Color( 60, 60, 60 )
+    colors.panelBackground = Color( 18, 18, 20, 240 )
+    colors.panelDisabledBackground = Color( 60, 60, 60, 255 )
     colors.scrollBackground = Color( 0, 0, 0, 200 )
 
     colors.labelText = Color( 255, 255, 255, 255 )
     colors.labelTextDisabled = Color( 180, 180, 180, 255 )
 
-    colors.buttonHover = Color( 150, 150, 150, 50 )
+    colors.buttonHover = Color( 120, 120, 120, 50 )
     colors.buttonPress = colors.accent
-    colors.buttonBorder = Color( 32, 32, 32, 255 )
+    colors.buttonBorder = Color( 10, 10, 10, 255 )
     colors.buttonText = Color( 255, 255, 255, 255 )
     colors.buttonTextDisabled = Color( 180, 180, 180, 255 )
 
-    colors.entryBackground = Color( 20, 20, 20, 255 )
-    colors.entryBorder = Color( 80, 80, 80, 255 )
+    colors.entryBackground = Color( 15, 15, 15, 255 )
+    colors.entryBorder = Color( 50, 50, 50, 255 )
     colors.entryHighlight = colors.accent
     colors.entryPlaceholder = Color( 150, 150, 150, 255 )
     colors.entryText = Color( 255, 255, 255, 255 )
@@ -272,6 +272,8 @@ do
     local Lerp = Lerp
     local FrameTime = FrameTime
 
+    local color_blood = Color( 180, 0, 0 )
+
     ClassFunctions["DButton"] = {
         Prepare = function( self )
             self:SetFont( "StyledTheme_Small" )
@@ -291,13 +293,35 @@ do
             DrawRect( 1, 1, w - 2, h - 2, enabled and colors.panelBackground or colors.panelDisabledBackground )
             DrawRect( 1, 1, w - 2, h - 2, colors.buttonHover, self.animHover )
             DrawRect( 1, 1, w - 2, h - 2, colors.buttonPress, self.animPress )
+
+            -- Nervous hover effect: blood-red text that shakes 1-3px each frame
+            local label = ( self.GetLabel and self:GetLabel() ) or self.Label
+            if IsValid( label ) and self.SetTextStyleColor then
+                if self:IsHovered() and enabled then
+                    self:SetTextStyleColor( color_blood )
+                    if self._shakeBaseX == nil then
+                        self._shakeBaseX = label:GetX()
+                        self._shakeBaseY = label:GetY()
+                    end
+                    label:SetPos( self._shakeBaseX + math.random( -3, 3 ), self._shakeBaseY + math.random( -3, 3 ) )
+                else
+                    self:SetTextStyleColor( enabled and colors.buttonText or colors.buttonTextDisabled )
+                    if self._shakeBaseX ~= nil then
+                        label:SetPos( self._shakeBaseX, self._shakeBaseY )
+                        self._shakeBaseX = nil
+                        self._shakeBaseY = nil
+                    end
+                end
+            end
         end,
 
         UpdateColours = function( self )
-            if self:IsEnabled() then
-                self:SetTextStyleColor( colors.buttonText )
-            else
-                self:SetTextStyleColor( colors.buttonTextDisabled )
+            if self.SetTextStyleColor then
+                if self:IsEnabled() then
+                    self:SetTextStyleColor( self:IsHovered() and color_blood or colors.buttonText )
+                else
+                    self:SetTextStyleColor( colors.buttonTextDisabled )
+                end
             end
         end
     }

@@ -1,6 +1,6 @@
 local PANEL = {}
 local curent_panel 
-local red_select = Color(192,0,0)
+local red_select = Color(170,0,0)
 
 DISCORD_URL = "https://discord.gg/475EmEdTgH"
 
@@ -15,7 +15,7 @@ local Selects = {
         btn:SetText( "SOE" )
         btn:SetMouseInputEnabled( true )
         btn:SizeToContents()
-        btn:SetFont( "ZCity_Small" )
+        btn:SetFont( "AoM_MM_Btn" )
         btn:SetTall( ScreenScale( 15 ) )
         btn:Dock(BOTTOM)
         btn:DockMargin(ScreenScale(20),ScreenScale(10),0,0)
@@ -37,13 +37,18 @@ local Selects = {
                 
             self:SetTextColor(self.RColor:Lerp(self.WColor:Lerp(red_select, self.HoverLerp2), self.HoverLerp))
             self:SetX(self.x + ScreenScaleH(40) + self.HoverLerp * ScreenScaleH(50))
+            if self:IsHovered() then
+                self:SetTextInset(5 + math.random(-3, 3), 5 + math.random(-3, 3))
+            else
+                self:SetTextInset(5, 5)
+            end
         end
 
         local btn = vgui.Create( "DLabel", btn )
         btn:SetText( "STD" )
         btn:SetMouseInputEnabled( true )
         btn:SizeToContents()
-        btn:SetFont( "ZCity_Small" )
+        btn:SetFont( "AoM_MM_Btn" )
         btn:SetTall( ScreenScale( 15 ) )
         btn:Dock(BOTTOM)
         btn:DockMargin(0,ScreenScale(2),0,0)
@@ -64,6 +69,11 @@ local Selects = {
     
             self:SetTextColor(self.RColor:Lerp(self.WColor:Lerp(red_select, self.HoverLerp2), self.HoverLerp))
             self:SetX(self.x + ScreenScaleH(35))
+            if self:IsHovered() then
+                self:SetTextInset(5 + math.random(-3, 3), 5 + math.random(-3, 3))
+            else
+                self:SetTextInset(5, 5)
+            end
         end
     end,
     Func = function(luaMenu)
@@ -105,6 +115,21 @@ surface.CreateFont("ZC_MM_Title", {
     weight = 800,
     antialias = true
 })
+
+-- Afraid of Monsters style fonts (AoM.ttf internal name "AoM")
+surface.CreateFont("AoM_MM_Title", {
+    font = "AoM",
+    size = ScreenScale(48),
+    weight = 800,
+    antialias = true
+})
+
+surface.CreateFont("AoM_MM_Btn", {
+    font = "AoM",
+    size = ScreenScale(16),
+    weight = 600,
+    antialias = true
+})
 -- local Title = markup.Parse("error")
 
 local Pluv = Material("pluv/pluvkid.jpg")
@@ -118,14 +143,14 @@ function PANEL:InitializeMarkup()
 	local gm = splasheh[math.random(#splasheh)] .. " | " .. string.NiceName(mapname) 
 
     if hg.PluvTown.Active then
-        local text = "<font=ZC_MM_Title><colour=199,2,2>    </colour>City</font>\n<font=ZCity_Tiny><colour=105,105,105>" .. gm .. "</colour></font>"
+        local text = "<font=AoM_MM_Title><colour=210,210,210>    </colour>City</font>\n<font=ZCity_Tiny><colour=105,105,105>" .. gm .. "</colour></font>"
 
         self.SelectedPluv = table.Random(hg.PluvTown.PluvMats)
 
         return markup.Parse(text)
     end
 
-    local text = "<font=ZC_MM_Title><colour=199,2,2,255>Z</colour>-City</font>\n<font=ZCity_Tiny><colour=105,105,105>" .. gm .. "</colour></font>"
+    local text = "<font=AoM_MM_Title><colour=210,210,210,255>CATATONIA</colour></font>\n<font=ZCity_Tiny><colour=105,105,105>" .. gm .. "</colour></font>"
     return markup.Parse(text)
 end
 
@@ -180,6 +205,7 @@ function PANEL:Init()
     bottomDock.Paint = function(this, w, h) end
     self.panelparrent = vgui.Create("DPanel", self)
     self.panelparrent:SetPos(bottomDock:GetWide()+bottomDock:GetX(), 0)
+    self.ModelW = ScrW() * 0.40
     self.panelparrent:SetSize(ScrW() - bottomDock:GetWide()*1, ScrH())
     self.panelparrent.Paint = function(this, w, h) end
     
@@ -214,6 +240,147 @@ function PANEL:Init()
     zteam:SetText("Authors: uzelezz, Sadsalat, \nMr.Point, Zac90, Deka, Mannytko")
     zteam:SetContentAlignment(4)
     zteam:SizeToContents()
+
+    -- Player character preview on the right (Afraid of Monsters style)
+    self:CreateModelPanel()
+end
+
+function PANEL:CreateModelPanel()
+    local mdlW = self.ModelW or ScrW() * 0.40
+    local mp = vgui.Create("DModelPanel", self)
+    self.ModelPanel = mp
+    mp:SetSize(mdlW, ScrH())
+    mp:SetPos(ScrW() - mdlW, 0)
+    mp:SetFOV(60)
+    -- Closer camera so the model fills ~65-70% of screen height
+    mp:SetCamPos(Vector(52, 0, 48))
+    mp:SetLookAt(Vector(0, 0, 36))
+    -- Cold, dim, moody lighting
+    mp:SetDirectionalLight(BOX_TOP, Color(110, 120, 150))
+    mp:SetDirectionalLight(BOX_FRONT, Color(45, 48, 55))
+    mp:SetDirectionalLight(BOX_BACK, Color(75, 0, 0))
+    mp:SetDirectionalLight(BOX_BOTTOM, Color(0, 0, 0))
+    mp:SetAmbientLight(Color(22, 22, 26, 255))
+    mp:SetMouseInputEnabled(false)
+    mp.bAnimated = false
+
+    function mp:LayoutEntity(ent)
+        if not IsValid(ent) then return end
+        local seq = ent:SelectWeightedSequence(ACT_HL2MP_IDLE)
+        if seq and seq ~= -1 then
+            ent:SetSequence(seq)
+        else
+            ent:SetSequence(ent:LookupSequence("idle_all_01") or 0)
+        end
+    end
+
+    function mp:OnMousePressed() end
+    function mp:OnMouseWheeled() end
+    function mp:DragMousePress() end
+    function mp:DragMouseRelease() end
+
+    local parent = self
+    function mp:Think()
+        self._nextRefresh = (self._nextRefresh or 0)
+        if CurTime() >= self._nextRefresh then
+            self._nextRefresh = CurTime() + 1
+            if IsValid(parent) then parent:RefreshModel() end
+        end
+    end
+
+    timer.Simple(0, function()
+        if IsValid(self) then self:RefreshModel() end
+    end)
+end
+
+function PANEL:RefreshModel()
+    local mp = self.ModelPanel
+    if not IsValid(mp) then return end
+    local ply = LocalPlayer()
+    if not IsValid(ply) then return end
+
+    local AP = hg.Appearance
+    local appearance = (AP and AP.LoadAppearanceFile and AP.SelectedAppearance)
+        and AP.LoadAppearanceFile(AP.SelectedAppearance:GetString()) or nil
+
+    local model = ply:GetModel()
+    local tMdl = nil
+    if appearance and appearance.AModel and AP and AP.PlayerModels then
+        tMdl = (AP.PlayerModels[1] and AP.PlayerModels[1][appearance.AModel])
+            or (AP.PlayerModels[2] and AP.PlayerModels[2][appearance.AModel])
+        if tMdl and tMdl.mdl then model = tMdl.mdl end
+    end
+
+    mp:SetModel(model)
+    local ent = mp.Entity
+    if not IsValid(ent) then return end
+
+    -- Skin & bodygroups from the current player
+    ent:SetSkin(ply:GetSkin())
+    local bgs = ply:GetBodyGroups()
+    if bgs then
+        for _, bg in ipairs(bgs) do
+            ent:SetBodygroup(bg.id, ply:GetBodygroup(bg.id))
+        end
+    end
+
+    -- Apply appearance: clothes, facemap, player color, bodygroups
+    if appearance and tMdl and AP then
+        local sex = (tMdl.sex and 2) or 1
+
+        if appearance.AColor then
+            ent:SetNWVector("PlayerColor", Vector(
+                appearance.AColor.r / 255,
+                appearance.AColor.g / 255,
+                appearance.AColor.b / 255
+            ))
+        end
+        ent.GetPlayerColor = function() end
+
+        local mats = ent:GetMaterials()
+
+        -- Clothes submaterials
+        if tMdl.submatSlots and AP.Clothes and AP.Clothes[sex] then
+            for slotName, matName in pairs(tMdl.submatSlots) do
+                local slot = 0
+                for i = 1, #mats do
+                    if mats[i] == matName then slot = i - 1 break end
+                end
+                local clothName = appearance.AClothes and appearance.AClothes[slotName]
+                local clothMat = AP.Clothes[sex][clothName] or AP.Clothes[sex]["normal"]
+                if clothMat then ent:SetSubMaterial(slot, clothMat) end
+            end
+        end
+
+        -- Facemap
+        if appearance.AFacemap and AP.FacemapsSlots then
+            for i = 1, #mats do
+                local faceSlots = AP.FacemapsSlots[mats[i]]
+                if faceSlots and faceSlots[appearance.AFacemap] then
+                    ent:SetSubMaterial(i - 1, faceSlots[appearance.AFacemap])
+                end
+            end
+        end
+
+        -- Bodygroups from appearance table
+        if appearance.ABodygroups and AP.Bodygroups then
+            local entBgs = ent:GetBodyGroups()
+            if entBgs then
+                for _, bg in ipairs(entBgs) do
+                    local chosen = appearance.ABodygroups[bg.name]
+                    local bgTab = AP.Bodygroups[bg.name]
+                    if chosen and bgTab and bgTab[sex] and bgTab[sex][chosen] then
+                        for i = 0, #bg.submodels do
+                            if bg.submodels[i] == bgTab[sex][chosen][1] then
+                                ent:SetBodygroup(bg.id, i)
+                                break
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
 end
 
 function PANEL:First( ply )
@@ -224,7 +391,7 @@ local gradient_d = surface.GetTextureID("vgui/gradient-d")
 local gradient_r = surface.GetTextureID("vgui/gradient-u")
 local gradient_l = surface.GetTextureID("vgui/gradient-l")
 
-local clr_1 = Color(102,0,0,35)
+local clr_1 = Color(15,15,15,40)
 function PANEL:Paint(w,h)
     draw.RoundedBox( 0, 0, 0, w, h, self.ColorBG )
     hg.DrawBlur(self, 5)
@@ -236,6 +403,13 @@ function PANEL:Paint(w,h)
     surface.DrawTexturedRect(0,0,w,h)
 end
 
+function PANEL:Think()
+    -- Hide the character preview while any sub-menu (Settings, Appearance, ...) is open
+    if IsValid(self.ModelPanel) then
+        self.ModelPanel:SetVisible(curent_panel == nil)
+    end
+end
+
 function PANEL:AddSelect( pParent, strTitle, tbl )
     local id = #self.Buttons + 1
     self.Buttons[id] = vgui.Create( "DLabel", pParent )
@@ -243,7 +417,7 @@ function PANEL:AddSelect( pParent, strTitle, tbl )
     btn:SetText( strTitle )
     btn:SetMouseInputEnabled( true )
     btn:SizeToContents()
-    btn:SetFont( "ZCity_Small" )
+    btn:SetFont( "AoM_MM_Btn" )
     btn:SetTall( ScreenScale( 15 ) )
     btn:Dock(BOTTOM)
     btn:DockMargin(ScreenScale(15),ScreenScale(1.5),0,0)
@@ -295,6 +469,13 @@ function PANEL:AddSelect( pParent, strTitle, tbl )
 
         local v = self.HoverLerp
         self:SetTextColor(self.RColor:Lerp(red_select, v))
+
+        -- Nervous shake on hover: text jitters 1-3px each frame
+        if self:IsHovered() then
+            self:SetTextInset(5 + math.random(-3, 3), 5 + math.random(-3, 3))
+        else
+            self:SetTextInset(5, 5)
+        end
 
         local targetText = (self:IsHovered()) and string.upper(strTitle) or strTitle
         local crw = self:GetText()

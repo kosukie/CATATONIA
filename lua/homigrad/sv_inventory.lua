@@ -60,6 +60,9 @@ local BlackList = {
     ["weapon_zombclaws"] = true
 }
 
+-- класс пустых рук игрока в этой сборке
+local HANDS_CLASS = "weapon_hands_sh"
+
 -- not SWEPs, just true in Weapons. They stay in inventory when weapons are renewed
 local VirtualItems = {
     ["hg_sling"] = true,
@@ -454,8 +457,19 @@ local VirtualItems = {
     local playerMeta = FindMetaTable("Player")
 
     function playerMeta:OpenInventory(ent)
-        hook.Run("ZB_InventoryOpened", self, ent)
         if !IsValid(ent) then return end
+
+        --\\ Обыскивать тела можно только с пустыми руками.
+        --   Регдоллы (и dead/fake-ragdoll игроки) требуют свободных рук, контейнеры (ящики, бочки) - нет.
+        if ent:IsRagdoll() or ent:IsPlayer() then
+            local wep = self:GetActiveWeapon()
+            if IsValid(wep) and wep:GetClass() ~= HANDS_CLASS then
+                self:ChatPrint("Ты не можешь обыскивать, когда твои руки заняты. Освободи руки, чтобы обыскать тело.")
+                return
+            end
+        end
+
+        hook.Run("ZB_InventoryOpened", self, ent)
         if ent:IsPlayer() and !IsValid(ent.FakeRagdoll) then return end
 
         if ent:IsPlayer() then hg.RenewInv(ent) end

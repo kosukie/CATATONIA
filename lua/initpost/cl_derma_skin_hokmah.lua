@@ -1,8 +1,8 @@
 --\\
 	HOKMAH_VGUI = HOKMAH_VGUI or {}
 	HOKMAH_VGUI.MainColor = Color(130, 130 ,130)
-	HOKMAH_VGUI.SecondaryColor = Color(155,0,0,240)
-	HOKMAH_VGUI.BackgroundColor = Color(165,165,165)
+	HOKMAH_VGUI.SecondaryColor = Color(70, 70, 70, 240)
+	HOKMAH_VGUI.BackgroundColor = Color(15, 15, 17, 230)
 --//
 
 --; Adapted from Helix
@@ -42,8 +42,8 @@ SKIN.Colours.Warning = Color(230, 180, 0)
 SKIN.Colours.MenuLabel = color_white
 SKIN.Colours.DarkerBackground = Color(0, 0, 0, 77)
 
-SKIN.Colours.Outline = Color(155, 0, 0, 255)
-SKIN.Colours.Background = Color(0, 0, 0, 205)
+SKIN.Colours.Outline = Color(20, 20, 20, 255)
+SKIN.Colours.Background = Color(8, 8, 10, 230)
 
 SKIN.Colours.SegmentedProgress = {}
 SKIN.Colours.SegmentedProgress.Bar = Color(64, 185, 85)
@@ -195,17 +195,20 @@ function SKIN:PaintCategoryPanel(panel, text, color)
 	return 1, textHeight, 1, 1
 end
 
+local color_red = Color(50, 50, 50)
+local color_blood = Color(180, 0, 0)
+
 function SKIN:PaintButton(panel)
 	if (panel.m_bBackground) then
 		local w, h = panel:GetWide(), panel:GetTall()
-		local alpha = 50
+		local alpha = 35
 
 		if (panel:GetDisabled()) then
-			alpha = 10
+			alpha = 8
 		elseif (panel.Depressed) then
-			alpha = 180
+			alpha = 110
 		elseif (panel.Hovered) then
-			alpha = 75
+			alpha = 60
 		end
 
 		if (panel:GetParent() and panel:GetParent():GetName() == "DListView_Column") then
@@ -213,16 +216,35 @@ function SKIN:PaintButton(panel)
 			surface.DrawRect(0, 0, w, h)
 		end
 
-		surface.SetDrawColor(30, 30, 30, alpha)
+		surface.SetDrawColor(20, 20, 20, alpha)
 		surface.DrawRect(0, 0, w, h)
 
-		surface.SetDrawColor(0, 0, 0, 180)
+		surface.SetDrawColor(0, 0, 0, 220)
 		surface.DrawOutlinedRect(0, 0, w, h)
+	end
 
-		surface.SetDrawColor(180, 180, 180, 2)
-		surface.DrawOutlinedRect(1, 1, w - 2, h - 2)
-		
-		if(panel.IsOn)then
+	-- Nervous hover effect: blood-red text that shakes 1-3px each frame
+	local label = (panel.GetLabel and panel:GetLabel()) or panel.Label
+	if IsValid(label) and panel.GetDisabled and panel.SetTextColor then
+		local disabled = panel:GetDisabled()
+		if panel:IsHovered() and not disabled then
+			panel:SetTextColor(color_blood)
+			if panel._shakeBaseX == nil then
+				panel._shakeBaseX = label:GetX()
+				panel._shakeBaseY = label:GetY()
+			end
+			label:SetPos(panel._shakeBaseX + math.random(-3, 3), panel._shakeBaseY + math.random(-3, 3))
+		else
+			panel:SetTextColor(color_white)
+			if panel._shakeBaseX ~= nil then
+				label:SetPos(panel._shakeBaseX, panel._shakeBaseY)
+				panel._shakeBaseX = nil
+				panel._shakeBaseY = nil
+			end
+		end
+	end
+
+	if(panel.IsOn)then
 			local text = nil
 			local draw_on = false
 			
@@ -299,7 +321,7 @@ function SKIN:PaintButton(panel)
 			if(draw_on)then
 				local width = 5
 				
-				surface.SetDrawColor(255, 153, 0, 255)
+				surface.SetDrawColor(200, 200, 200, 255)
 				surface.DrawRect(0, 0, width, h)
 				surface.SetDrawColor(255,255,255,20)
 				surface.DrawRect(0, 0, width, h * 0.25)
@@ -528,10 +550,10 @@ function SKIN:PaintPropertySheet( panel, width, height )
 
 	hg.DrawBlur(panel)
 
-	surface.SetDrawColor(30, 30, 30, 150)
+	surface.SetDrawColor(25, 25, 25, 150)
 	surface.DrawRect(0, 0, width, height)
 
-	surface.SetDrawColor(255, 0, 0, 150)
+	surface.SetDrawColor(0, 0, 0, 150)
 	surface.DrawOutlinedRect(0, 0, width, height)
 end
 
@@ -546,9 +568,9 @@ end
 
 function SKIN:PaintActiveTab( panel, w, h )
 
-	surface.SetDrawColor(30, 30, 30, 150)
+	surface.SetDrawColor(35, 35, 35, 180)
 	surface.DrawRect(0, 0, w, h*0.8)
-	surface.SetDrawColor(255, 0, 0, 150)
+	surface.SetDrawColor(0, 0, 0, 180)
 	surface.DrawOutlinedRect(0, 0, w, h*0.8,1)
 
 end
