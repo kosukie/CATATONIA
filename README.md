@@ -11,7 +11,7 @@
 
 <a id="english" name="english"></a>
 
-*CATATONIA is a horror-leaning fork of Z-City for Garry's Mod. At least we settled on a color scheme.*
+*CATATONIA is a horror-leaning fork of Z-City for Garry's Mod.*
 
 ## What's New in CATATONIA
 
@@ -35,7 +35,9 @@ CATATONIA is licensed under the **GNU Affero General Public License v3.0**. [Lic
 
 <a id="русский" name="русский"></a>
 
-*CATATONIA — хоррор-форк Z-City для Garry's Mod. Зато с цветовой гаммой мы определились.*
+<p align="center"><img src=".github/assets/catatonia_logo.gif" width="520" alt="CATATONIA"></p>
+
+*CATATONIA — хоррор-форк Z-City для Garry's Mod.*
 
 ## Что нового в CATATONIA
 
