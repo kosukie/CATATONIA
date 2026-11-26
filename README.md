@@ -11,7 +11,7 @@
 
 <a id="english" name="english"></a>
 
-*CATATONIA is a horror-leaning fork of Z-City for Garry's Mod. The round carries on behind the menu. At least we settled on a color scheme.*
+*CATATONIA is a horror-leaning fork of Z-City for Garry's Mod. At least we settled on a color scheme.*
 
 ## What's New in CATATONIA
 
@@ -35,13 +35,13 @@ CATATONIA is licensed under the **GNU Affero General Public License v3.0**. [Lic
 
 <a id="русский" name="русский"></a>
 
-*CATATONIA — хоррор-форк Z-City для Garry's Mod. Раунд продолжается даже за меню. Зато с цветовой гаммой мы определились.*
+*CATATONIA — хоррор-форк Z-City для Garry's Mod. Зато с цветовой гаммой мы определились.*
 
 ## Что нового в CATATONIA
 
 - **Пауз-меню.** Вдохновлено *Afraid of Monsters: Director's Cut*. Заголовок набран шрифтом `AoM.ttf` и переливается в духе WON. Справа видно текущего персонажа в полный рост, со всей одеждой, аксессуарами и бронёй.
 - **Монохромная Derma.** Настройки, редактор внешности и достижения теперь в чёрно-белой гамме.
-- **Обыск тел.** Чтобы обыскать труп или рэгдолл, сначала освободи руки.
+- **Обыск тел.** Чтобы обыскать труп или рэгдолл, сначала освободи руки. АНТИ-ХОМИГРАД СИСТЕМА!!!111!11!1!
 
 ### В планах
 
