@@ -189,15 +189,20 @@ end
     local developer = GetConVar("developer")
     ENT.ShouldRenderLocaly = true
     local vec = Vector(1,1,1)
-    function ENT:RenderOnBody(entDrawOn)
+    function ENT:RenderOnBody(entDrawOn, previewModels)
         local fem = ThatPlyIsFemale(entDrawOn)
         local ply = hg.RagdollOwner(entDrawOn) or entDrawOn:IsPlayer() and entDrawOn or nil
         if !self.ShouldRenderLocaly and IsValid(ply) and !ply:IsLocal() then return end
-        if !IsValid(self.renderModel) then
+        local models = previewModels or self
+        local key = previewModels and self or "renderModel"
+        local model = models[key]
+        if not IsValid(model) then
             local data = fem and self.FeMale or self.Male
-            self.renderModel = ClientsideModel(data.Model, RENDERGROUP_BOTH)
+            if not data or not data.Model or data.Model == "" then return end
+            model = ClientsideModel(data.Model, RENDERGROUP_BOTH)
+            if not IsValid(model) then return end
+            models[key] = model
 
-            local model = self.renderModel
             model:SetNoDraw(true)
             model:SetSkin(data.Skin)
             model:SetBodyGroups(data.Bodygroups)
@@ -221,15 +226,12 @@ end
                 end
             end
 
-            self:CallOnRemove("RemoveEquip",function()
-                if IsValid(self.renderModel) then
-                    model:Remove()
-                    model = nil
-                end
-            end)
+            if not previewModels then
+                self:CallOnRemove("RemoveEquip", function()
+                    if IsValid(model) then model:Remove() end
+                end)
+            end
         end
-
-        local model = self.renderModel
 
         local mdl = string.Split(string.sub(entDrawOn:GetModel(),1,-5),"/")[#string.Split(string.sub(entDrawOn:GetModel(),1,-5),"/")]
         if mdl and model:GetFlexIDByName(mdl) then
@@ -248,12 +250,13 @@ end
                 model:SetModelScale(data.ModelSize)
             end
             local matBone = entDrawOn:GetBoneMatrix(model.ParentBone)
+            if not matBone then return end
             local pos = matBone:GetTranslation()
             local ang = matBone:GetAngles()
 
             pos,ang = LocalToWorld(model.OffsetPos, model.OffsetAng, pos, ang)
 
-            self:RenderModifyPosAng(entDrawOn, pos, ang)
+            self:RenderModifyPosAng(entDrawOn, pos, ang, previewModels and model)
             model:SetPos(pos)
             model:SetAngles(ang)
 

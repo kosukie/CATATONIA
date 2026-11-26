@@ -16,7 +16,7 @@ local gradient_u = Material("vgui/gradient-u")
 gradient_r = Material("vgui/gradient-r")
 
 local function PaintButton(self,w,h)
-    surface.SetDrawColor(155, 0, 0, 108)
+    surface.SetDrawColor(90, 90, 90, 108)
     surface.SetMaterial(gradient_l)
     surface.DrawTexturedRect( 0, 0, w, h )
 end
@@ -117,11 +117,11 @@ end
 local gradient_d = Material("vgui/gradient-d")
 local function PaintFrame(self,w,h)
 	BlurBackground(self)
-    surface.SetDrawColor(50, 0, 0, 155)
+    surface.SetDrawColor(30, 30, 30, 155)
     surface.SetMaterial(gradient_d)
     surface.DrawTexturedRect( 0, 0, w, h )
 
-	surface.SetDrawColor( 150, 0, 0, 128)
+	surface.SetDrawColor(135, 135, 135, 128)
     surface.DrawOutlinedRect( 0, 0, w, h, 2.5 )
 end
 
@@ -181,7 +181,8 @@ function hg.DrawAchievmentsMenu(ParentPanel)
     end
     function sbar.btnGrip:Paint(w, h)
         self.lerpcolor = Lerp(FrameTime() * 10, self.lerpcolor or 0.2,(self:IsHovered() and 0.8 or 0.6))
-        draw.RoundedBox(0, 0, 0, w, h, Color(100 * self.lerpcolor, 10, 10))
+        local shade = 100 * self.lerpcolor
+        draw.RoundedBox(0, 0, 0, w, h, Color(shade, shade, shade))
     end
 
     function frame:UpdateValues()
@@ -209,12 +210,12 @@ function hg.DrawAchievmentsMenu(ParentPanel)
     frame2:Center()
     frame2:SetPos(frame:GetX()+frame:GetWide(),frame:GetY())
     frame2.Paint = function(self,w,h)
-        surface.SetDrawColor(92,0,0,108)
+        surface.SetDrawColor(65, 65, 65,108)
         surface.SetMaterial(gradient_d)
         surface.DrawTexturedRect(0,0,w,h)
-        surface.SetDrawColor(40,36,36,255)
+        surface.SetDrawColor(38, 38, 38,255)
         surface.DrawRect(0,h-h/6,w,h/6)
-        surface.SetDrawColor(22,21,21)
+        surface.SetDrawColor(22, 22, 22)
         surface.DrawRect(0,h-3,w,3)
         
         if curent_panel_ach then
@@ -283,7 +284,7 @@ net.Receive("hg_NewAchievement",function()
 	surface.PlaySound("homigrad/vgui/achievement_earned.wav")
 end)
 
-local ach_clr1 , ach_clr2 = Color(200,25,25), Color(100,25,25)
+local achievementBackground = Color(35, 35, 35)
 hook.Add("HUDPaint","hg_NewAchievement", function()
     local frametime = FrameTime() * 10
     for i = 1, #AchTable do
@@ -296,13 +297,13 @@ hook.Add("HUDPaint","hg_NewAchievement", function()
         ach.Lerp = Lerp( frametime, ach.Lerp or 0, math.min( ach.time - CurTime(), 1 ) * i )
         WSize, HSize = (ScrW() * 0.1) + (wt), ScrH() * 0.05
         local HPos = ScrH() - ( HSize * ach.Lerp )
-        draw.RoundedBox( 0, 2, HPos + 2, WSize - 4, HSize - 4, ach_clr2 )
+        draw.RoundedBox( 0, 2, HPos + 2, WSize - 4, HSize - 4, achievementBackground )
 		
-		surface.SetDrawColor(155, 0, 0, 255)
+		surface.SetDrawColor(90, 90, 90, 255)
 		surface.SetMaterial(gradient_u)
 		surface.DrawTexturedRect( 0, HPos, WSize, HSize )
 	
-		surface.SetDrawColor( 150, 0, 0, 255)
+		surface.SetDrawColor(135, 135, 135, 255)
 		surface.DrawOutlinedRect( 0, HPos, WSize, HSize, 2.5 )
 
         surface.SetFont("HomigradFontMedium")

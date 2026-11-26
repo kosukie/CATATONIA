@@ -35,14 +35,19 @@ ENT.NameAng = Angle(0,-90,0)
 
 --\\ Render Equipment
     local vec = Vector(1,1,1)
-    function ENT:RenderOnBody(entDrawOn)
+    function ENT:RenderOnBody(entDrawOn, previewModels)
         local fem = ThatPlyIsFemale(entDrawOn)
 
-        if !IsValid(self.renderModel) then
+        local models = previewModels or self
+        local key = previewModels and self or "renderModel"
+        local model = models[key]
+        if not IsValid(model) then
             local data = fem and self.FeMale or self.Male
-            self.renderModel = ClientsideModel(data.Model, RENDERGROUP_BOTH)
+            if not data or not data.Model or data.Model == "" then return end
+            model = ClientsideModel(data.Model, RENDERGROUP_BOTH)
+            if not IsValid(model) then return end
+            models[key] = model
 
-            local model = self.renderModel
             model:SetNoDraw(true)
             model:SetSkin(data.Skin)
             model:SetBodyGroups(data.Bodygroups)
@@ -57,15 +62,12 @@ ENT.NameAng = Angle(0,-90,0)
                 end
             end
 
-            self:CallOnRemove("RemoveEquip",function()
-                if IsValid(self.renderModel) then
-                    model:Remove()
-                    model = nil
-                end
-            end)
+            if not previewModels then
+                self:CallOnRemove("RemoveEquip", function()
+                    if IsValid(model) then model:Remove() end
+                end)
+            end
         end
-
-        local model = self.renderModel
 
         local mdl = string.Split(string.sub(entDrawOn:GetModel(),1,-5),"/")[#string.Split(string.sub(entDrawOn:GetModel(),1,-5),"/")]
         if mdl and model:GetFlexIDByName(mdl) then

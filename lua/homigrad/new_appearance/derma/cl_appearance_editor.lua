@@ -3,19 +3,21 @@ local APmodule = hg.Appearance
 local PANEL = {}
 
 local colors = {}
-colors.secondary = Color(25,25,35,195)
+colors.secondary = Color(25, 25, 25,195)
 colors.mainText = Color(255,255,255,255)
 colors.secondaryText = Color(45,45,45,125)
-colors.selectionBG = Color(20,130,25,225)
-colors.highlightText = Color(120,35,35)
-colors.presetBG = Color(35,35,45,220)
-colors.presetBorder = Color(80,80,100,255)
-colors.presetHover = Color(50,50,65,240)
-colors.scrollbarBG = Color(20,20,30,200)
-colors.scrollbarGrip = Color(70,70,90,255)
-colors.scrollbarGripHover = Color(100,100,130,255)
-colors.scrollbarBorder = Color(100,100,120,200)
-colors.previewBorder = Color(255,200,50,255)
+colors.selectionBG = Color(60, 60, 60, 225)
+colors.buttonHover = Color(88, 88, 88)
+colors.buttonBorder = Color(130, 130, 130)
+colors.highlightText = Color(145, 145, 145)
+colors.presetBG = Color(35, 35, 35,220)
+colors.presetBorder = Color(85, 85, 85,255)
+colors.presetHover = Color(55, 55, 55,240)
+colors.scrollbarBG = Color(20, 20, 20,200)
+colors.scrollbarGrip = Color(75, 75, 75,255)
+colors.scrollbarGripHover = Color(115, 115, 115,255)
+colors.scrollbarBorder = Color(110, 110, 110,200)
+colors.previewBorder = Color(225, 225, 225,255)
 
 local presetsDir = "zcity/appearances/presets/"
 
@@ -26,7 +28,8 @@ end
 
 local function LoadPreset(strName)
     if not file.Exists(presetsDir .. strName .. ".json", "DATA") then return nil end
-    return util.JSONToTable(file.Read(presetsDir .. strName .. ".json", "DATA"))
+    local appearance = util.JSONToTable(file.Read(presetsDir .. strName .. ".json", "DATA") or "")
+    if istable(appearance) and APmodule.AppearanceValidater(appearance) then return appearance end
 end
 
 local function GetPresetList()
@@ -109,7 +112,7 @@ local function CreateStyledScrollPanel(parent)
     return scroll
 end
 
-local clr_ico, clr_menu = Color(30, 30, 40, 255), Color(15, 15, 20, 250)
+local clr_ico, clr_menu = Color(30, 30, 30, 255), Color(15, 15, 15, 250)
 local function CreateStyledAccessoryMenu(parent, title)
     local menu = vgui.Create("DFrame")
     menu:SetTitle(title or "")
@@ -172,6 +175,7 @@ local function CreateStyledAccessoryMenu(parent, title)
             end
         end
         timer.Simple(0,function()
+            if not IsValid(spawnIcon) or not IsValid(spawnIcon:GetEntity()) then return end
             spawnIcon.Entity:SetSkin((isfunction(accessoryData.skin) and accessoryData.skin()) or (accessoryData.skin or 0))
             spawnIcon.Entity:SetBodyGroups(accessoryData.bodygroups or "0000000")
             if accessoryData.SubMat then
@@ -219,7 +223,7 @@ local function CreateStyledAccessoryMenu(parent, title)
         
         function ico:Paint(w, h)
             local borderCol = self.bIsHovered and colors.scrollbarGripHover or colors.scrollbarBorder
-            draw.RoundedBox(4, 0, 0, w, h, Color(30, 30, 40, 255))
+            draw.RoundedBox(4, 0, 0, w, h, Color(30, 30, 30, 255))
             surface.SetDrawColor(borderCol)
             surface.DrawOutlinedRect(0, 0, w, h, 1)
             
@@ -253,8 +257,13 @@ local function CreateStyledAccessoryMenu(parent, title)
     return menu
 end
 
-function PANEL:SetAppearance( tAppearacne )
-    self.AppearanceTable = tAppearacne
+function PANEL:SetAppearance(appearance)
+    local color = appearance.AColor
+    if not istable(color) or not isnumber(color.r) or not isnumber(color.g) or not isnumber(color.b) then
+        appearance.AColor = table.Copy(APmodule.SkeletonAppearanceTable.AColor)
+    end
+
+    self.AppearanceTable = appearance
 end
 
 function PANEL:CallbackAppearance()
@@ -270,8 +279,6 @@ function PANEL:First( ply )
         self:PostInit()
     end
 end
-
-local sizeX, sizeY = ScrW() * 1, ScrH() * 1
 
 local xbars = 17
 local ybars = 30
@@ -314,13 +321,30 @@ function PANEL:PostInit()
     self:SetDraggable(false)
     self.modelPosID = "All"
 
-    self.AppearanceTable = self.AppearanceTable or hg.Appearance.LoadAppearanceFile(hg.Appearance.SelectedAppearance:GetString()) or APmodule.GetRandomAppearance()
+    local appearance = self.AppearanceTable or APmodule.LoadAppearanceFile(APmodule.SelectedAppearance:GetString())
+    self:SetAppearance(appearance or APmodule.GetRandomAppearance())
 
-    local tMdl = APmodule.PlayerModels[1][self.AppearanceTable.AModel] or APmodule.PlayerModels[2][self.AppearanceTable.AModel]
-    --print(tMdl.mdl)
-    local viewer = vgui.Create( "DModelPanel", self )
-    viewer:SetSize(sizeX / 2.6,sizeY)
-    viewer:SetModel( util.IsValidModel( tostring(tMdl.mdl) ) and tostring(tMdl.mdl) or "models/player/group01/female_01.mdl" )
+    local models = APmodule.PlayerModels
+    local fallbackModel = "models/player/group01/female_01.mdl"
+    local tMdl
+    local viewer = vgui.Create("DModelPanel", self)
+
+    local function UpdatePreviewModel()
+        local name = main.AppearanceTable.AModel
+        local model = models[1][name] or models[2][name] or models[1][APmodule.SkeletonAppearanceTable.AModel]
+        if model == tMdl then return end
+
+        tMdl = model
+        local path = file.Exists(model.mdl, "GAME") and model.mdl or fallbackModel
+        if not IsValid(viewer:GetEntity()) or viewer:GetModel() ~= path then
+            viewer:SetModel(path)
+            if path ~= fallbackModel and not IsValid(viewer:GetEntity()) then
+                viewer:SetModel(fallbackModel)
+            end
+        end
+    end
+
+    UpdatePreviewModel()
     viewer:SetFOV( 75 )
     viewer:SetLookAng( Angle( 11, 180, 0 ) )
     viewer:SetCamPos( Vector( 100, 0, 55 ) )
@@ -346,6 +370,7 @@ function PANEL:PostInit()
         ["Hands"] = 0.5
     }
     function viewer:Think()
+        UpdatePreviewModel()
         self.SmoothFOV = LerpFT(0.05,self.SmoothFOV or self:GetFOV(), main.modelPosID == "All" and 75 or 35)
         self.LookAngles = LerpFT(0.05, self.LookAngles or 11, main.modelPosID == "All" and 11 or 0)
         self:SetFOV( self.SmoothFOV )
@@ -357,50 +382,57 @@ function PANEL:PostInit()
     end
     local funpos1x
     local funpos3x
-    function viewer:LayoutEntity( Entity )
-        local lookX, lookY = input.GetCursorPos()
-        lookX = lookX / sizeX - 0.5
-        lookY = lookY / sizeY - 0.5
-        Entity.Angles = Entity.Angles or Angle(0,0,0)
-        Entity.Angles = LerpAngle(FrameTime() * 5,Entity.Angles,Angle(lookY * 2,(self.Rotate and -179 or 0) -lookX * 75,0))
-        local tbl = main.AppearanceTable
-        tMdl = APmodule.PlayerModels[1][tbl.AModel] or APmodule.PlayerModels[2][tbl.AModel]
+    local defaultPlayerColor = Vector(1, 1, 1)
+    local function GetPreviewPlayerColor(entity)
+        return entity:GetNWVector("PlayerColor", defaultPlayerColor)
+    end
 
-        Entity:SetNWVector("PlayerColor",Vector(tbl.AColor.r / 255, tbl.AColor.g / 255, tbl.AColor.b / 255))
+    function viewer:LayoutEntity(Entity)
+        local lookX, lookY = self:ScreenToLocal(input.GetCursorPos())
+        lookX = lookX / math.max(self:GetWide(), 1) - 0.5
+        lookY = lookY / math.max(self:GetTall(), 1) - 0.5
+        Entity.Angles = Entity.Angles or Angle(0, 0, 0)
+        Entity.Angles = LerpAngle(FrameTime() * 5, Entity.Angles,
+            Angle(lookY * 2, (self.Rotate and -179 or 0) - lookX * 75, 0))
+        local tbl = main.AppearanceTable
+        local sex = tMdl.sex and 2 or 1
+        local color = tbl.AColor
+
+        Entity.GetPlayerColor = GetPreviewPlayerColor
+        Entity:SetNWVector("PlayerColor", Vector(color.r / 255, color.g / 255, color.b / 255))
         Entity:SetAngles(Entity.Angles)
-        Entity:SetSequence(Entity:LookupSequence("idle_suitcase"))
+        local sequence = Entity:LookupSequence("idle_suitcase")
+        if sequence >= 0 then Entity:SetSequence(sequence) end
         Entity:SetSubMaterial()
-        self:SetCamPos( Vector( 100, 0, 55 * (self.OffsetY or 1) ) )
-        if Entity:GetModel() != tMdl.mdl then
-            Entity:SetModel(tMdl.mdl)
-            self:SetModel(tMdl.mdl)
-            tbl.AFacemap = "Default"
-        end
-        --print(tMdl.mdl)
+        self:SetCamPos(Vector(100, 0, 55 * (self.OffsetY or 1)))
 
         local mats = Entity:GetMaterials()
-        for k, v in SortedPairs(tMdl.submatSlots) do
-            local slot = 1
-            for i = 1, #mats do
-                if mats[i] == v then slot = i-1 break end
+        local clothes = APmodule.Clothes[sex]
+        for key, material in SortedPairs(tMdl.submatSlots) do
+            local style = isstring(tbl.AClothes[key]) and tbl.AClothes[key] or "normal"
+            Entity:SetNWString("Colthes" .. key, style)
+            for index, name in ipairs(mats) do
+                if name == material then
+                    Entity:SetSubMaterial(index - 1, clothes[style] or clothes.normal)
+                    break
+                end
             end
-            Entity:SetSubMaterial(slot, hg.Appearance.Clothes[tMdl.sex and 2 or 1][tbl.AClothes[k]] or hg.Appearance.Clothes[tMdl.sex and 2 or 1]["normal"] )
-            Entity:SetNWString("Colthes" .. k,tbl.AClothes[k])
         end
         for i = 1, #mats do
             if hg.Appearance.FacemapsSlots[mats[i]] and hg.Appearance.FacemapsSlots[mats[i]][tbl.AFacemap] then
                 Entity:SetSubMaterial(i - 1, hg.Appearance.FacemapsSlots[mats[i]][tbl.AFacemap])
             end
         end
-        local bodygroups = Entity:GetBodyGroups()
-        tbl.ABodygroups = tbl.ABodygroups or {}
-        for k, v in SortedPairs(bodygroups) do
-            if !tbl.ABodygroups[v.name] then continue end
-            for i = 0, #v.submodels do
-                local b = v.submodels[i]
-                if not hg.Appearance.Bodygroups[v.name][tMdl.sex and 2 or 1][tbl.ABodygroups[v.name]] then continue end
-                if hg.Appearance.Bodygroups[v.name][tMdl.sex and 2 or 1][tbl.ABodygroups[v.name]][1] != b then continue end
-                Entity:SetBodygroup(k-1,i)
+        tbl.ABodygroups = istable(tbl.ABodygroups) and tbl.ABodygroups or {}
+        for index, group in ipairs(Entity:GetBodyGroups()) do
+            local options = APmodule.Bodygroups[group.name]
+            local selection = options and options[sex] and options[sex][tbl.ABodygroups[group.name]]
+            if not selection then continue end
+            for i = 0, #group.submodels do
+                if group.submodels[i] == selection[1] then
+                    Entity:SetBodygroup(index - 1, i)
+                    break
+                end
             end
         end
 
@@ -418,8 +450,6 @@ function PANEL:PostInit()
         end
         Entity:SetupBones()
     end
-
-    function viewer.Entity:GetPlayerColor() return end
 
     function viewer:PaintOver(w,h)
         --surface.SetDrawColor(colors.highlightText)
@@ -441,7 +471,9 @@ function PANEL:PostInit()
     modelSelector:Dock(FILL)
     modelSelector:SetContentAlignment(5)
     function modelSelector:OnSelect(i,str)
+        if main.AppearanceTable.AModel == str then return end
         main.AppearanceTable.AModel = str
+        main.AppearanceTable.AFacemap = "Default"
     end
 
     for k, v in SortedPairs(APmodule.PlayerModels[1]) do
@@ -497,8 +529,8 @@ function PANEL:PostInit()
     end
 
     function ApplyButton:Paint(w,h)
-        draw.RoundedBox(4,0,0,w,h,colors.selectionBG)
-        surface.SetDrawColor(Color(30, 160, 35, 255))
+        draw.RoundedBox(4, 0, 0, w, h, colors.selectionBG)
+        surface.SetDrawColor(colors.buttonBorder)
         surface.DrawOutlinedRect(0,0,w,h,1)
     end
 
@@ -513,7 +545,7 @@ function PANEL:PostInit()
         main.AppearanceTable.AName = self:GetValue()
     end
     function NameEntry:Paint(w, h)
-        draw.RoundedBox(4, 0, 0, w, h, Color(20, 20, 25, 240))
+        draw.RoundedBox(4, 0, 0, w, h, Color(20, 20, 20, 240))
         surface.SetDrawColor(colors.scrollbarBorder)
         surface.DrawOutlinedRect(0, 0, w, h, 1)
         self:DrawTextEntryText(colors.mainText, colors.selectionBG, colors.mainText)
@@ -533,9 +565,9 @@ function PANEL:PostInit()
     savePresetBtn:SetTextColor(colors.mainText)
     savePresetBtn:DockMargin(0,0,5,0)
     function savePresetBtn:Paint(w, h)
-        local bgCol = self:IsHovered() and Color(30, 150, 35, 255) or colors.selectionBG
+        local bgCol = self:IsHovered() and colors.buttonHover or colors.selectionBG
         draw.RoundedBox(4, 0, 0, w, h, bgCol)
-        surface.SetDrawColor(Color(40, 180, 45, 255))
+        surface.SetDrawColor(colors.buttonBorder)
         surface.DrawOutlinedRect(0, 0, w, h, 1)
     end
     local presetNameEntry
@@ -563,9 +595,9 @@ function PANEL:PostInit()
     loadPresetBtn:SetTextColor(colors.mainText)
     loadPresetBtn:DockMargin(0,0,5,0)
     function loadPresetBtn:Paint(w, h)
-        local bgCol = self:IsHovered() and Color(50, 100, 180, 255) or Color(35, 75, 150, 230)
+        local bgCol = self:IsHovered() and colors.buttonHover or colors.selectionBG
         draw.RoundedBox(4, 0, 0, w, h, bgCol)
-        surface.SetDrawColor(Color(60, 120, 200, 255))
+        surface.SetDrawColor(colors.buttonBorder)
         surface.DrawOutlinedRect(0, 0, w, h, 1)
     end
     function loadPresetBtn:DoClick()
@@ -584,7 +616,7 @@ function PANEL:PostInit()
         presetMenu:SetDraggable(false)
         
         function presetMenu:Paint(w, h)
-            draw.RoundedBox(8, 0, 0, w, h, Color(20, 20, 28, 250))
+            draw.RoundedBox(8, 0, 0, w, h, Color(20, 20, 20, 250))
             surface.SetDrawColor(colors.presetBorder)
             surface.DrawOutlinedRect(0, 0, w, h, 2)
             draw.RoundedBoxEx(8, 0, 0, w, ScreenScale(12), colors.secondary, true, true, false, false)
@@ -613,7 +645,7 @@ function PANEL:PostInit()
             function presetBtn:DoClick()
                 local loadedPreset = LoadPreset(presetName)
                 if loadedPreset then
-                    main.AppearanceTable = loadedPreset
+                    main:SetAppearance(loadedPreset)
                     NameEntry:SetText(loadedPreset.AName or "")
                     modelSelector:SetText(loadedPreset.AModel or "Male 01")
                     presetNameEntry:SetText(presetName)
@@ -646,9 +678,9 @@ function PANEL:PostInit()
     deletePresetBtn:SetText("Delete")
     deletePresetBtn:SetTextColor(colors.mainText)
     function deletePresetBtn:Paint(w, h)
-        local bgCol = self:IsHovered() and Color(180, 50, 50, 255) or Color(140, 40, 40, 230)
+        local bgCol = self:IsHovered() and colors.buttonHover or colors.selectionBG
         draw.RoundedBox(4, 0, 0, w, h, bgCol)
-        surface.SetDrawColor(Color(200, 60, 60, 255))
+        surface.SetDrawColor(colors.buttonBorder)
         surface.DrawOutlinedRect(0, 0, w, h, 1)
     end
     function deletePresetBtn:DoClick()
@@ -677,7 +709,7 @@ function PANEL:PostInit()
     presetNameEntry:SetContentAlignment(5)
     presetNameEntry:DockMargin(5,0,0,0)
     function presetNameEntry:Paint(w, h)
-        draw.RoundedBox(4, 0, 0, w, h, Color(15, 15, 20, 255))
+        draw.RoundedBox(4, 0, 0, w, h, Color(15, 15, 15, 255))
         surface.SetDrawColor(colors.scrollbarBorder)
         surface.DrawOutlinedRect(0, 0, w, h, 1)
         self:DrawTextEntryText(colors.mainText, colors.selectionBG, colors.mainText)
@@ -700,7 +732,7 @@ function PANEL:PostInit()
     hatSelector:SetText("Hats")
     function hatSelector:Think()
         if funpos1x then
-            hatSelector:SetPos(sizeX * 0.1 + funpos1x, sizeY * 0.2)
+            hatSelector:SetPos(viewer:GetWide() * 0.1 + funpos1x, viewer:GetTall() * 0.2)
         end
     end
 
@@ -764,7 +796,7 @@ function PANEL:PostInit()
     faceSelector:SetText("Face")
     function faceSelector:Think()
         if funpos1x then
-            faceSelector:SetPos(sizeX * 0.1 + funpos1x, sizeY * 0.2 + ScreenScale(32))
+            faceSelector:SetPos(viewer:GetWide() * 0.1 + funpos1x, viewer:GetTall() * 0.2 + ScreenScale(32))
         end
     end
     function faceSelector:Paint(w,h)
@@ -827,7 +859,7 @@ function PANEL:PostInit()
     bodySelector:SetText("Body")
     function bodySelector:Think()
         if funpos3x then
-            bodySelector:SetPos(sizeX * 0.1 + funpos1x, sizeY * 0.2 + ScreenScale(64))
+            bodySelector:SetPos(viewer:GetWide() * 0.1 + funpos1x, viewer:GetTall() * 0.2 + ScreenScale(64))
         end
     end
     function bodySelector:Paint(w,h)
@@ -835,7 +867,7 @@ function PANEL:PostInit()
         surface.SetDrawColor(colors.scrollbarBorder)
         surface.DrawOutlinedRect(0,0,w,h,1)
     end
-    bodySelector:SetPos(sizeX * 0.1, sizeY * 0.5)
+    bodySelector:SetPos(viewer:GetWide() * 0.1, viewer:GetTall() * 0.5)
     
     function bodySelector:DoClick()
         main.modelPosID = "Torso"
@@ -892,7 +924,7 @@ function PANEL:PostInit()
     bodyMatSelector:SetText("Jacket")
     function bodyMatSelector:Think()
         if funpos3x then
-            bodyMatSelector:SetPos(sizeX * 0.5 - funpos3x, sizeY * 0.2)
+            bodyMatSelector:SetPos(viewer:GetWide() * 0.5 - funpos3x, viewer:GetTall() * 0.2)
         end
     end
     function bodyMatSelector:Paint(w,h)
@@ -900,7 +932,7 @@ function PANEL:PostInit()
         surface.SetDrawColor(colors.scrollbarBorder)
         surface.DrawOutlinedRect(0,0,w,h,1)
     end
-    bodyMatSelector:SetPos(sizeX * 0.5, sizeY * 0.5)
+    bodyMatSelector:SetPos(viewer:GetWide() * 0.5, viewer:GetTall() * 0.5)
     function bodyMatSelector:DoClick()
         main.modelPosID = "Torso"
         bodyMatSelectorMenu = DermaMenu()
@@ -936,7 +968,7 @@ function PANEL:PostInit()
     legsMatSelector:SetText("Pants")
     function legsMatSelector:Think()
         if funpos3x then
-            legsMatSelector:SetPos(sizeX * 0.5 - funpos3x, sizeY * 0.2 + ScreenScale(32))
+            legsMatSelector:SetPos(viewer:GetWide() * 0.5 - funpos3x, viewer:GetTall() * 0.2 + ScreenScale(32))
         end
     end
     function legsMatSelector:Paint(w,h)
@@ -944,7 +976,7 @@ function PANEL:PostInit()
         surface.SetDrawColor(colors.scrollbarBorder)
         surface.DrawOutlinedRect(0,0,w,h,1)
     end
-    legsMatSelector:SetPos(sizeX * 0.5, sizeY * 0.5)
+    legsMatSelector:SetPos(viewer:GetWide() * 0.5, viewer:GetTall() * 0.5)
     function legsMatSelector:DoClick()
         main.modelPosID = "Legs"
         legsMatSelectorMenu = DermaMenu()
@@ -974,7 +1006,7 @@ function PANEL:PostInit()
     bootsMatSelector:SetText("Boots")
     function bootsMatSelector:Think()
         if funpos3x then
-            bootsMatSelector:SetPos(sizeX * 0.5 - funpos3x, sizeY * 0.2 + ScreenScale(64))
+            bootsMatSelector:SetPos(viewer:GetWide() * 0.5 - funpos3x, viewer:GetTall() * 0.2 + ScreenScale(64))
         end
     end
     function bootsMatSelector:Paint(w,h)
@@ -982,7 +1014,7 @@ function PANEL:PostInit()
         surface.SetDrawColor(colors.scrollbarBorder)
         surface.DrawOutlinedRect(0,0,w,h,1)
     end
-    bootsMatSelector:SetPos(sizeX * 0.5, sizeY * 0.5)
+    bootsMatSelector:SetPos(viewer:GetWide() * 0.5, viewer:GetTall() * 0.5)
     function bootsMatSelector:DoClick()
         main.modelPosID = "Boots"
         bootsMatSelectorMenu = DermaMenu()
@@ -1012,7 +1044,7 @@ function PANEL:PostInit()
     glovesSelector:SetText("Gloves")
     function glovesSelector:Think()
         if funpos3x then
-            glovesSelector:SetPos(sizeX * 0.5 - funpos3x, sizeY * 0.2 + ScreenScale(96))
+            glovesSelector:SetPos(viewer:GetWide() * 0.5 - funpos3x, viewer:GetTall() * 0.2 + ScreenScale(96))
         end
     end
     function glovesSelector:Paint(w,h)
@@ -1020,7 +1052,7 @@ function PANEL:PostInit()
         surface.SetDrawColor(colors.scrollbarBorder)
         surface.DrawOutlinedRect(0,0,w,h,1)
     end
-    glovesSelector:SetPos(sizeX * 0.5, sizeY * 0.5)
+    glovesSelector:SetPos(viewer:GetWide() * 0.5, viewer:GetTall() * 0.5)
     function glovesSelector:DoClick()
         main.modelPosID = "Hands"
         glovesSelectorMenu = DermaMenu()
@@ -1044,7 +1076,7 @@ function PANEL:PostInit()
     faceMatSelector:SetText("Facemap")
     function faceMatSelector:Think()
         if funpos3x then
-            faceMatSelector:SetPos(sizeX * 0.5 - funpos3x, sizeY * 0.2 + ScreenScale(96 + 32))
+            faceMatSelector:SetPos(viewer:GetWide() * 0.5 - funpos3x, viewer:GetTall() * 0.2 + ScreenScale(96 + 32))
         end
     end
     function faceMatSelector:Paint(w,h)
@@ -1052,7 +1084,7 @@ function PANEL:PostInit()
         surface.SetDrawColor(colors.scrollbarBorder)
         surface.DrawOutlinedRect(0,0,w,h,1)
     end
-    faceMatSelector:SetPos(sizeX * 0.5, sizeY * 0.5)
+    faceMatSelector:SetPos(viewer:GetWide() * 0.5, viewer:GetTall() * 0.5)
     function faceMatSelector:DoClick()
         main.modelPosID = "Face"
         faceMatSelectorMenu = DermaMenu()
@@ -1088,7 +1120,8 @@ function hg.CreateApperanceMenu(ParentPanel)
         hg.Appearance.PrecacheModels()
     end
 
-    hg.PointShop:SendNET( "SendPointShopVars", nil, function( data )
+    hg.PointShop:SendNET( "SendPointShopVars", nil, function()
+        if not IsValid(ParentPanel) then return end
         if IsValid(zpan) then
             zpan:Close()
         end

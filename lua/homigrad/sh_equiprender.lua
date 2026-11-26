@@ -125,24 +125,27 @@ if CLIENT then
 
 	end	
 
-	function DrawArmors(ply, armors, ent)
+	function DrawArmors(ply, armors, ent, preview)
 		if not IsValid(ply) or not armors then return end
 		if blmodels[ply:GetModel()] then return end
 		local lply = LocalPlayer():Alive() and LocalPlayer() or LocalPlayer():GetNWEntity("spect")
-		islply = ((ply:IsRagdoll() and hg.RagdollOwner(ply)) or ply) == lply and (LocalPlayer():Alive() and (GetViewEntity() == lply) or (viewmode == 1))
+		local islply = not preview and ((ply:IsRagdoll() and hg.RagdollOwner(ply)) or ply) == lply and (LocalPlayer():Alive() and (GetViewEntity() == lply) or (viewmode == 1))
 		
+		local modelOwner = preview and ent or ply
 		for placement, armor in pairs(armors) do
 			if placement == "torso" and blVestmodels[ply:GetModel()] then continue end
-			local armorData = hg.armor[placement][armor]
+			local armorSet = hg.armor and hg.armor[placement]
+			local armorData = armorSet and armorSet[armor]
 
-			if armorData["model"] == "" then continue end
+			if not armorData or not armorData.model or armorData.model == "" then continue end
 
-			ply.modelArmor = ply.modelArmor or {}
+			modelOwner.modelArmor = modelOwner.modelArmor or {}
 			local fem = ThatPlyIsFemale(ent)
 
-			if not IsValid(ply.modelArmor[armor]) then
-				ply.modelArmor[armor] = ClientsideModel(armorData["model"])
-				local model = ply.modelArmor[armor]
+			if not IsValid(modelOwner.modelArmor[armor]) then
+				modelOwner.modelArmor[armor] = ClientsideModel(armorData["model"])
+				local model = modelOwner.modelArmor[armor]
+				if not IsValid(model) then continue end
 				model:SetNoDraw(true)
 				model:SetModelScale( (fem and armorData.femscale) or armorData.scale or 1 )
 				local fallback_mat = istable(armorData.material) and armorData.material[1] or armorData.material
@@ -159,29 +162,31 @@ if CLIENT then
 					model:AddEffects(EF_BONEMERGE)
 				end
 				
-				ply:CallOnRemove("removearmors"..placement,function()
-					if ply.modelArmor and IsValid(model) then
-						model:Remove()
-						model = nil
-					end
-				end)
-				ent:CallOnRemove("removearmors"..placement,function()
-					if ent.modelArmor and IsValid(model) then
-						model:Remove()
-						model = nil
-					end
-				end)
+				if not preview then
+					ply:CallOnRemove("removearmors"..placement,function()
+						if ply.modelArmor and IsValid(model) then
+							model:Remove()
+							model = nil
+						end
+					end)
+					ent:CallOnRemove("removearmors"..placement,function()
+						if ent.modelArmor and IsValid(model) then
+							model:Remove()
+							model = nil
+						end
+					end)
+				end
 			end
 			
-			local ent = hg.GetCurrentCharacter(ply)
+			local ent = preview and ent or hg.GetCurrentCharacter(ply)
 	
 			if not IsValid(ent) then return end
 	
-			local model = ply.modelArmor[armor]
+			local model = modelOwner.modelArmor[armor]
 			
 			if not IsValid(model) then return end
 			
-			if ent.NotSeen or not ent.shouldTransmit then
+			if not preview and (ent.NotSeen or not ent.shouldTransmit) then
 				return
 			end
 
@@ -190,7 +195,8 @@ if CLIENT then
 				model:SetFlexWeight(model:GetFlexIDByName(mdl),1)
 			end
 			
-			local matrix = ent:GetBoneMatrix(ent:LookupBone(armorData["bone"]))
+			local bone = ent:LookupBone(armorData.bone)
+			local matrix = bone and ent:GetBoneMatrix(bone)
 			if not matrix then
 				return
 			end
@@ -201,7 +207,7 @@ if CLIENT then
 			model:SetRenderOrigin(pos)
 			model:SetRenderAngles(ang)
 
-			model:SetParent(ent,ent:LookupBone(armorData["bone"]))
+			model:SetParent(ent, bone)
 			
 			--model:SetupBones()
 			

@@ -2,11 +2,8 @@
 
 ----
 local PANEL = {}
---[[
-hg.VGUI.SecondaryColor = Color(155,0,0,240)
-hg.VGUI.BackgroundColor = Color(25,25,35,220)]]
-local color_blacky = Color(25,25,30,220)
-local color_reddy = Color(155,0,0,240)
+local background = hg.VGUI.BackgroundColor
+local border = hg.VGUI.SecondaryColor
 
 function PANEL:Init()
     self.Itensens = {}
@@ -15,12 +12,12 @@ function PANEL:Init()
 
     self.DrawBorder = true
 
-    self.ColorBG = Color(color_blacky:Unpack())
-    self.ColorBR = Color(color_reddy:Unpack())
+    self.ColorBG = Color(background:Unpack())
+    self.ColorBR = Color(border:Unpack())
     self.BlurStrengh = 2
 
     timer.Simple(0,function()
-        if self.First then
+        if IsValid(self) and self.First then
             self:First()
         end
     end)

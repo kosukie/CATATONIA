@@ -1,8 +1,8 @@
 --\\
 hg.VGUI = hg.VGUI or {}
-hg.VGUI.MainColor = Color(150, 0 ,0)
-hg.VGUI.SecondaryColor = Color(155,0,0,240)
-hg.VGUI.BackgroundColor = Color(25,25,35,220)
+hg.VGUI.MainColor = Color(155, 155, 155)
+hg.VGUI.SecondaryColor = Color(110, 110, 110,240)
+hg.VGUI.BackgroundColor = Color(24, 24, 24,220)
 hg.VGUI.MainSkin = "ZCity"
 
 function hg.GetMainSkin()
@@ -125,18 +125,18 @@ SKIN.fontSegmentedProgress = "ZCity_Fixed_Medium_Light"
 
 SKIN.Colours = table.Copy(derma.SkinList.Default.Colours)
 
-SKIN.Colours.Info = Color(100, 185, 255)
-SKIN.Colours.Success = Color(64, 185, 85)
+SKIN.Colours.Info = Color(200, 200, 200)
+SKIN.Colours.Success = Color(185, 185, 185)
 SKIN.Colours.Error = Color(255, 100, 100)
-SKIN.Colours.Warning = Color(230, 180, 0)
+SKIN.Colours.Warning = Color(235, 235, 235)
 SKIN.Colours.MenuLabel = color_white
 SKIN.Colours.DarkerBackground = Color(0, 0, 0, 77)
 
-SKIN.Colours.Outline = Color(155, 0, 0, 255)
+SKIN.Colours.Outline = Color(110, 110, 110, 255)
 SKIN.Colours.Background = Color(0, 0, 0, 205)
 
 SKIN.Colours.SegmentedProgress = {}
-SKIN.Colours.SegmentedProgress.Bar = Color(64, 185, 85)
+SKIN.Colours.SegmentedProgress.Bar = Color(185, 185, 185)
 SKIN.Colours.SegmentedProgress.Text = color_white
 
 SKIN.Colours.Area = {}
@@ -147,9 +147,42 @@ SKIN.Colours.Window.TitleInactive = color_white
 SKIN.Colours.Button.Normal = color_white
 SKIN.Colours.Button.Hover = color_white
 SKIN.Colours.Button.Down = Color(180, 180, 180)
-SKIN.Colours.Button.Disabled = Color(0, 0, 0, 100)
+SKIN.Colours.Button.Disabled = Color(115, 115, 115)
 
 SKIN.Colours.Label.Default = color_white
+
+SKIN.colTextEntryTextCursor = color_white
+SKIN.colNumSliderNotch = Color(135, 135, 135)
+SKIN.listview_selected = Color(85, 85, 85)
+SKIN.combobox_selected = SKIN.listview_selected
+
+function SKIN:PaintCheckBox(panel, w, h)
+	local enabled = panel:IsEnabled()
+	local fill = enabled and (panel:IsHovered() and 52 or 30) or 20
+	local border = enabled and 125 or 65
+	surface.SetDrawColor(fill, fill, fill)
+	surface.DrawRect(0, 0, w, h)
+	surface.SetDrawColor(border, border, border)
+	surface.DrawOutlinedRect(0, 0, w, h)
+
+	if panel:GetChecked() then
+		local mark = enabled and 245 or 115
+		surface.SetDrawColor(mark, mark, mark)
+		surface.DrawLine(w * 0.22, h * 0.52, w * 0.43, h * 0.73)
+		surface.DrawLine(w * 0.43, h * 0.73, w * 0.78, h * 0.28)
+	end
+end
+
+function SKIN:PaintSliderKnob(panel, w, h)
+	local shade = 155
+	if not panel:IsEnabled() then
+		shade = 75
+	elseif panel.Depressed or panel:IsHovered() then
+		shade = 245
+	end
+
+	draw.RoundedBox(2, 2, 2, w - 4, h - 4, Color(shade, shade, shade))
+end
 
 function SKIN.tex.Menu_Strip(x, y, width, height, color)
 	surface.SetDrawColor(0, 0, 0, 200)
@@ -309,7 +342,8 @@ function SKIN:PaintButton(panel)
 	end
 end
 
-local color_red = Color(50, 50, 50)
+local countWarning = Color(145, 145, 145)
+local textSelection = Color(95, 95, 95)
 
 function SKIN:PaintTextEntry( panel, w, h )
 	if ( panel.m_bBackground ) then
@@ -352,7 +386,7 @@ function SKIN:PaintTextEntry( panel, w, h )
 		local color = color_white
 		
 		if(!panel:TextEntryConditionsMet(amt))then
-			color = color_red
+			color = countWarning
 		end
 		
 		draw.DrawText(amt .. "/" .. panel.CharactersMin .. add_text, "ZCity_Tiny", w * 1.0, h * 0, color, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
@@ -366,13 +400,13 @@ function SKIN:PaintTextEntry( panel, w, h )
 		str = language.GetPhrase( str )
 
 		panel:SetText( str )
-		panel:DrawTextEntryText( panel:GetPlaceholderColor(), panel:GetHighlightColor(), panel:GetCursorColor() )
+		panel:DrawTextEntryText( panel:GetPlaceholderColor(), textSelection, panel:GetCursorColor() )
 		panel:SetText( oldText )
 
 		return
 	end
 
-	panel:DrawTextEntryText( panel:GetTextColor(), panel:GetHighlightColor(), panel:GetCursorColor() )
+	panel:DrawTextEntryText( panel:GetTextColor(), textSelection, panel:GetCursorColor() )
 end
 
 function SKIN:PaintEntityInfoBackground(panel, width, height)
@@ -518,7 +552,7 @@ function SKIN:PaintPropertySheet( panel, width, height )
 	surface.SetDrawColor(30, 30, 30, 150)
 	surface.DrawRect(0, 0, width, height)
 
-	surface.SetDrawColor(255, 0, 0, 150)
+	surface.SetDrawColor(120, 120, 120, 150)
 	surface.DrawOutlinedRect(0, 0, width, height)
 end
 
@@ -535,7 +569,7 @@ function SKIN:PaintActiveTab( panel, w, h )
 
 	surface.SetDrawColor(30, 30, 30, 150)
 	surface.DrawRect(0, 0, w, h*0.8)
-	surface.SetDrawColor(255, 0, 0, 150)
+	surface.SetDrawColor(120, 120, 120, 150)
 	surface.DrawOutlinedRect(0, 0, w, h*0.8,1)
 
 end
@@ -555,7 +589,7 @@ end
 
 function SKIN:PaintChatboxTabButton(panel, width, height)
 	if (panel:GetActive()) then
-		surface.SetDrawColor(hg.VGUI.MainColor or Color(75, 119, 190, 255))
+		surface.SetDrawColor(hg.VGUI.MainColor)
 		surface.DrawRect(0, 0, width, height)
 	else
 		surface.SetDrawColor(0, 0, 0, 100)

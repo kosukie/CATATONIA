@@ -81,9 +81,10 @@ function ENT:Think()
     end
 end
 
-function ENT:RenderModifyPosAng(entDrawOn, pos, ang)
-    self.EnabledRot = LerpFT(0.2, self.EnabledRot or 0, !self:GetEnabled(false) and 25 or 0)
-    ang:RotateAroundAxis(ang:Right(), self.EnabledRot)
+function ENT:RenderModifyPosAng(entDrawOn, pos, ang, previewModel)
+    local animation = previewModel or self
+    animation.EnabledRot = LerpFT(0.2, animation.EnabledRot or 0, !self:GetEnabled(false) and 25 or 0)
+    ang:RotateAroundAxis(ang:Right(), animation.EnabledRot)
 end
 
 function ENT:Enable(ply)

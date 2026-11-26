@@ -13,9 +13,9 @@ end
 
 function hg.Appearance.LoadAppearanceFile(strFile_name)
 	if not file.Exists(dir .. strFile_name .. ".json", "DATA") then return false end
-	local tblAppearance = util.JSONToTable(file.Read(dir .. strFile_name .. ".json"))
+	local tblAppearance = util.JSONToTable(file.Read(dir .. strFile_name .. ".json", "DATA") or "")
 
-	if not hg.Appearance.AppearanceValidater(tblAppearance) then return false, "file is damaged [data/zcity/appearances/" .. strFile_name .. ".json]"  end
+	if not istable(tblAppearance) or not hg.Appearance.AppearanceValidater(tblAppearance) then return false, "file is damaged [data/zcity/appearances/" .. strFile_name .. ".json]"  end
 
 	return tblAppearance
 end
@@ -144,6 +144,7 @@ function DrawAccesories(ply, ent, accessories,accessData, islply, force, setup, 
 		ply.modelAccess[accessories] = ClientsideModel(fem and accessData["femmodel"] or accessData["model"], RENDERGROUP_BOTH)
 
 		local model = ply.modelAccess[accessories]
+		if not IsValid(model) then return end
 		model:SetNoDraw(true)
 		model:SetModelScale( accessData[fem and "fempos" or "malepos"][3] )
 		model:SetSkin( isfunction(accessData["skin"]) and accessData["skin"](ent) or accessData["skin"] )

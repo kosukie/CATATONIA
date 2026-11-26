@@ -178,10 +178,8 @@ local clr_1 = Color(255,255,255,104)
 local clr_2 = Color(122,122,122,104)
 local clr_3 = Color(28,28,28)
 local clr_4 = Color(0, 0, 0, 30)
-local clr_5 = Color(30, 29, 29, 30)
-local clr_6 = Color(255, 255, 255, 100)
 local clr_7 = Color(255, 255, 255, 200)
-local clr_8 = Color(70, 130, 180)
+local clr_8 = Color(95, 95, 95)
 function hg.CreateButton(buttonData, convarName, ParentPanel, yPos)
     local convar = GetConVar(convarName)
 
@@ -222,17 +220,13 @@ function hg.CreateButton(buttonData, convarName, ParentPanel, yPos)
                 animProgress = Lerp(FrameTime() * 8, animProgress, targetProgress)
             end
             
-            local bgColor = Color(
-                Lerp(animProgress, 180, 80),  
-                Lerp(animProgress, 30, 120),  
-                Lerp(animProgress, 30, 50)   
-            )
+            local shade = Lerp(animProgress, 105, 240)
+            local bgColor = Color(shade, shade, shade)
             
             local shadowColor = Color(0, 0, 0, Lerp(animProgress, 150, 40))
             surface.SetDrawColor(clr_3)
             draw.RoundedBox(0, 0, 0, w, h, clr_3)
-            
-            surface.SetDrawColor(clr_5)
+
             draw.RoundedBox(0, 2, 2, w - 4, h - 4, clr_4)
             
             local slsize = h - 12
@@ -241,8 +235,7 @@ function hg.CreateButton(buttonData, convarName, ParentPanel, yPos)
             draw.RoundedBox(0, slPos, 6, slsize, slsize, bgColor)
             surface.SetDrawColor(shadowColor)
             surface.DrawRect(slPos, slsize+4, slsize, 3)
-    
-            surface.SetDrawColor(clr_6)
+
         end
         
         function toggle:DoClick()
