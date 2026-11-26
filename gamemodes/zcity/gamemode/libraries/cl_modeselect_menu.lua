@@ -8,22 +8,21 @@ if CLIENT then
     local queueManagerInstance = nil
 
     --;; The worst part of the job is taking the shit you wrote and making it readable
-    local COL_BG        = Color(18, 18, 20, 240)
-    local COL_BORDER    = Color(55, 55, 55, 255)
-    local COL_CAT       = Color(45, 45, 45, 255)
-    local COL_CATBAR    = Color(30, 30, 30, 255)
-    local COL_ROW       = Color(38, 38, 38, 235)
-    local COL_ROW_HOV   = Color(52, 52, 52, 240)
-    local COL_ROWBAR    = Color(32, 32, 32, 235)
-    local COL_ACCENT    = Color(75, 75, 75, 255)
-    local COL_ACCENT_H  = Color(105, 105, 105, 255)
-    local COL_GREEN     = Color(85, 85, 85, 255)
-    local COL_GREEN_H   = Color(115, 115, 115, 255)
-    local COL_ORANGE    = Color(130, 130, 130, 255)
+    local COL_BG        = Color(28, 28, 28, 240)
+    local COL_BORDER    = Color(75, 75, 75, 255)
+    local COL_CAT       = Color(60, 60, 60, 255)
+    local COL_CATBAR    = Color(42, 42, 42, 255)
+    local COL_ROW       = Color(43, 43, 43, 235)
+    local COL_ROW_HOV   = Color(56, 56, 56, 240)
+    local COL_ROWBAR    = Color(47, 47, 47, 235)
+    local COL_ACCENT    = Color(160, 45, 45, 255)
+    local COL_ACCENT_H  = Color(190, 60, 60, 255)
+    local COL_GREEN     = Color(80, 125, 65, 255)
+    local COL_GREEN_H   = Color(100, 150, 85, 255)
+    local COL_ORANGE    = Color(220, 150, 45, 255)
     local COL_TEXT      = Color(235, 235, 235, 235)
     local COL_TEXT_DIM  = Color(140, 140, 140, 220)
-    local COL_TOGGLE_BG = Color(22, 22, 22, 255)
-    local COL_BLOOD     = Color(180, 0, 0, 255)
+    local COL_TOGGLE_BG = Color(28, 28, 28, 255)
 
     local menufont = "Bahnschrift"
 
@@ -100,26 +99,6 @@ if CLIENT then
             draw.RoundedBox(0, 0, 0, w, h, c)
             surface.SetDrawColor(0, 0, 0, 55)
             surface.DrawRect(0, h - 3, w, 3)
-
-            -- Nervous hover effect: blood-red text that shakes 1-3px each frame
-            local label = (self.GetLabel and self:GetLabel()) or self.Label
-            if IsValid(label) and self.SetTextColor then
-                if self:IsHovered() then
-                    self:SetTextColor(COL_BLOOD)
-                    if self._shakeBaseX == nil then
-                        self._shakeBaseX = label:GetX()
-                        self._shakeBaseY = label:GetY()
-                    end
-                    label:SetPos(self._shakeBaseX + math.random(-3, 3), self._shakeBaseY + math.random(-3, 3))
-                else
-                    self:SetTextColor(txtColor)
-                    if self._shakeBaseX ~= nil then
-                        label:SetPos(self._shakeBaseX, self._shakeBaseY)
-                        self._shakeBaseX = nil
-                        self._shakeBaseY = nil
-                    end
-                end
-            end
         end
     end
 
@@ -602,26 +581,6 @@ if CLIENT then
                 surface.DrawRect(0, 0, w, h)
                 surface.SetDrawColor(0, 0, 0, 55)
                 surface.DrawRect(0, h - 3, w, 3)
-
-                -- Nervous hover effect: blood-red text that shakes 1-3px each frame
-                local label = (self.GetLabel and self:GetLabel()) or self.Label
-                if IsValid(label) and self.SetTextColor then
-                    if self:IsHovered() then
-                        self:SetTextColor(COL_BLOOD)
-                        if self._shakeBaseX == nil then
-                            self._shakeBaseX = label:GetX()
-                            self._shakeBaseY = label:GetY()
-                        end
-                        label:SetPos(self._shakeBaseX + math.random(-3, 3), self._shakeBaseY + math.random(-3, 3))
-                    else
-                        self:SetTextColor(COL_TEXT)
-                        if self._shakeBaseX ~= nil then
-                            label:SetPos(self._shakeBaseX, self._shakeBaseY)
-                            self._shakeBaseX = nil
-                            self._shakeBaseY = nil
-                        end
-                    end
-                end
             end
             return btn
         end
