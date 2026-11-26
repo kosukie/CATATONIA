@@ -1,41 +1,32 @@
-<div align="center">
+<p align="center"><img src=".github/assets/catatonia_logo.gif" width="520" alt="CATATONIA"></p>
 
-# Z-City
+<p align="center">
+  <img src="https://img.shields.io/static/v1?label=&amp;message=Closed%20Beta&amp;color=252930&amp;style=flat-square" alt="Closed Beta">
+  <img src="https://img.shields.io/static/v1?label=&amp;message=Garry%27s%20Mod&amp;color=1c2128&amp;style=flat-square" alt="Garry's Mod">
+  <a href="https://github.com/uzelezz123/Z-City"><img src="https://img.shields.io/static/v1?label=&amp;message=Fork%20of%20Z-City&amp;color=252930&amp;style=flat-square" alt="Fork of Z-City"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/static/v1?label=&amp;message=AGPL-3.0&amp;color=1c2128&amp;style=flat-square" alt="AGPL-3.0"></a>
+</p>
 
-[![GitHub License](https://img.shields.io/github/license/uzelezz123/Z-City)](LICENSE)
-[![Steam Subscriptions](https://img.shields.io/steam/subscriptions/3657285193)](https://steamcommunity.com/sharedfiles/filedetails/?id=3657285193)
-[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/uzelezz123/Z-City)]()
-[![GitHub Repo stars](https://img.shields.io/github/stars/uzelezz123/Z-City?style=flat)](https://github.com/uzelezz123/Z-City)
-![Discord](https://img.shields.io/discord/1271789595125743727)
+<p align="center"><em>CATATONIA is a horror-leaning fork of Z-City for Garry's Mod. The interface fades into shadow while the round carries on behind it.</em></p>
 
-*yo hi its catatonia zcity fork yooo fully vibe coded hi*
+## What's New in CATATONIA
 
-</div>
+- **Pause menu.** Inspired by *Afraid of Monsters: Director's Cut*, with the `AoM.ttf` typeface, a WON-style ghosting effect on the title, and a full-body 3D preview of your current character wearing their clothes, accessories, and armor.
+- **Monochrome Derma.** A black-and-white redesign of the Settings, Appearance, and Achievements panels.
+- **Body searches.** Switch to empty hands before searching corpses or ragdolls.
 
----
+### Planned
 
-## 🔗 Resources & Links
+- A psychopathy and hallucination system triggered by brutal kills.
+- New round-start sounds.
+- A redesigned HUD and weapon selector.
 
-- **[🎮 Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3657285193)** - Stable version
-- **[⚙️ 8bit module](https://github.com/uzelezz123/8bit_zcity)** - Compiled version is located in `lua/bin` directory of **this** repository
+## Showcase / Screenshots
 
-### 🧩 Optional RPC Modules (for clients):
-- **[⚙️ Steam Rich Presence](https://github.com/YuRaNnNzZZ/gmcl_steamrichpresencer/releases/tag/2023.07.20)**
-- **[⚙️ Discord Rich Presence](https://github.com/fluffy-servers/gmod-discord-rpc/releases/tag/1.2.1)**
+![Early CATATONIA pause menu showcase](.github/assets/early_menu_showcase.jpg)
 
----
+## Credits & License
 
-## 📦 Versioning
+**Z-City Team** created the original gamemode. [Original repository · uzelezz123/Z-City](https://github.com/uzelezz123/Z-City)
 
-**Current version:** `1.4.2`
-
-Our versioning system follows the **`A.B.cc`** format:
-* **`A`** - Global updates
-* **`B`** - New mechanics and gameplay changes
-* **`cc`** - Fixes and other minor improvements
-
----
-
-## 📜 License
-
-This project is open-source and shared under the **GNU AGPL-3** license. Head over to the [License](LICENSE) file for more information.
+CATATONIA is licensed under the **GNU Affero General Public License v3.0**. [License](LICENSE)
