@@ -7,7 +7,11 @@
   <a href="LICENSE"><img src="https://img.shields.io/static/v1?label=&amp;message=AGPL-3.0&amp;color=1c2128&amp;style=flat-square" alt="AGPL-3.0"></a>
 </p>
 
-<p align="center"><em>CATATONIA is a horror-leaning fork of Z-City for Garry's Mod. The interface fades into shadow while the round carries on behind it.</em></p>
+<p align="center"><a href="#english">English</a> • <a href="#русский">Русский</a></p>
+
+<a id="english" name="english"></a>
+
+*CATATONIA is a horror-leaning fork of Z-City for Garry's Mod. The round carries on behind the menu. At least we settled on a color scheme.*
 
 ## What's New in CATATONIA
 
@@ -21,12 +25,38 @@
 - New round-start sounds.
 - A redesigned HUD and weapon selector.
 
-## Showcase / Screenshots
-
-![Early CATATONIA pause menu showcase](.github/assets/early_menu_showcase.jpg)
-
 ## Credits & License
 
 **Z-City Team** created the original gamemode. [Original repository · uzelezz123/Z-City](https://github.com/uzelezz123/Z-City)
 
 CATATONIA is licensed under the **GNU Affero General Public License v3.0**. [License](LICENSE)
+
+---
+
+<a id="русский" name="русский"></a>
+
+*CATATONIA — хоррор-форк Z-City для Garry's Mod. Раунд продолжается даже за меню. Зато с цветовой гаммой мы определились.*
+
+## Что нового в CATATONIA
+
+- **Пауз-меню.** Вдохновлено *Afraid of Monsters: Director's Cut*. Заголовок набран шрифтом `AoM.ttf` и переливается в духе WON. Справа видно текущего персонажа в полный рост, со всей одеждой, аксессуарами и бронёй.
+- **Монохромная Derma.** Настройки, редактор внешности и достижения теперь в чёрно-белой гамме.
+- **Обыск тел.** Чтобы обыскать труп или рэгдолл, сначала освободи руки.
+
+### В планах
+
+- Система психопатии и галлюцинаций после жестоких убийств.
+- Новые звуки начала раунда.
+- Переработка HUD и селектора оружия.
+
+## Авторы и лицензия
+
+Оригинальный режим создала **Z-City Team**. [Исходный репозиторий · uzelezz123/Z-City](https://github.com/uzelezz123/Z-City)
+
+CATATONIA распространяется по лицензии **GNU Affero General Public License v3.0**. [Лицензия](LICENSE)
+
+---
+
+## Showcase / Screenshots
+
+![Early CATATONIA pause menu / Ранний вариант пауз-меню CATATONIA](.github/assets/early_menu_showcase.jpg)
