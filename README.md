@@ -1,7 +1,7 @@
 <p align="center"><img src=".github/assets/catatonia_logo.gif" width="520" alt="CATATONIA"></p>
 
 <p align="center">
-  <img src="https://img.shields.io/static/v1?label=&amp;message=Closed%20Beta&amp;color=252930&amp;style=flat-square" alt="Closed Beta">
+  <img src="https://img.shields.io/static/v1?label=&amp;message=Open%20Beta&amp;color=252930&amp;style=flat-square" alt="Open Beta">
   <img src="https://img.shields.io/static/v1?label=&amp;message=Garry%27s%20Mod&amp;color=1c2128&amp;style=flat-square" alt="Garry's Mod">
   <a href="https://github.com/uzelezz123/Z-City"><img src="https://img.shields.io/static/v1?label=&amp;message=Fork%20of%20Z-City&amp;color=252930&amp;style=flat-square" alt="Fork of Z-City"></a>
   <a href="LICENSE"><img src="https://img.shields.io/static/v1?label=&amp;message=AGPL-3.0&amp;color=1c2128&amp;style=flat-square" alt="AGPL-3.0"></a>
@@ -17,13 +17,14 @@
 
 - **Pause menu.** Inspired by *Afraid of Monsters: Director's Cut*, with the `AoM.ttf` typeface, a WON-style ghosting effect on the title, and a full-body 3D preview of your current character wearing their clothes, accessories, and armor.
 - **Monochrome Derma.** A black-and-white redesign of the Settings, Appearance, and Achievements panels.
+- **Weapon selector.** Inspired by *Afraid of Monsters*, with square slots, item-count indicators, and white weapon silhouettes.
 - **Body searches.** Switch to empty hands before searching corpses or ragdolls.
 
 ### Planned
 
 - A psychopathy and hallucination system triggered by brutal kills.
 - New round-start sounds.
-- A redesigned HUD and weapon selector.
+- A redesigned HUD.
 
 ## Credits & License
 
@@ -43,13 +44,14 @@ CATATONIA is licensed under the **GNU Affero General Public License v3.0**. [Lic
 
 - **Пауз-меню.** Вдохновлено *Afraid of Monsters: Director's Cut*. Заголовок набран шрифтом `AoM.ttf` и переливается в духе WON. Справа видно текущего персонажа в полный рост, со всей одеждой, аксессуарами и бронёй.
 - **Монохромная Derma.** Настройки, редактор внешности и достижения теперь в чёрно-белой гамме.
+- **Селектор оружия.** В стиле *Afraid of Monsters*, с квадратными слотами, индикаторами количества предметов и белыми силуэтами оружия.
 - **Обыск тел.** Чтобы обыскать труп или рэгдолл, сначала освободи руки. АНТИ-ХОМИГРАД СИСТЕМА!!!111!11!1!
 
 ### В планах
 
 - Система психопатии и галлюцинаций после жестоких убийств.
 - Новые звуки начала раунда.
-- Переработка HUD и селектора оружия.
+- Переработка HUD.
 
 ## Авторы и лицензия
 
@@ -62,3 +64,5 @@ CATATONIA распространяется по лицензии **GNU Affero Ge
 ## Showcase / Screenshots
 
 ![Early CATATONIA pause menu / Ранний вариант пауз-меню CATATONIA](.github/assets/early_menu_showcase.jpg)
+
+![CATATONIA weapon selector / Селектор оружия CATATONIA](.github/assets/weapon_selector_preview.gif)
