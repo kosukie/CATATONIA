@@ -1,6 +1,13 @@
 local watermarkText = "CATATONIA | OPEN BETA | by kosuke_ (github.com/kosukie/CATATONIA)"
 local watermarkColor = Color(255, 255, 255, 45)
 local drawHUD = GetConVar("cl_drawhud")
+local bottomMargin = 10
+
+function hg.GetCatatoniaWatermarkTop()
+	surface.SetFont("CatatoniaWatermark")
+	local _, height = surface.GetTextSize(watermarkText)
+	return ScrH() - bottomMargin - height
+end
 
 local function CreateWatermarkFont()
 	surface.CreateFont("CatatoniaWatermark", {
@@ -16,6 +23,6 @@ hook.Add("HUDPaint", "CatatoniaWatermark", function()
 	if not drawHUD:GetBool() then return end
 	if IsValid(MainMenu) and MainMenu:IsVisible() then return end
 
-	draw.SimpleText(watermarkText, "CatatoniaWatermark", ScrW() - 12, ScrH() - 10,
+	draw.SimpleText(watermarkText, "CatatoniaWatermark", ScrW() - 12, ScrH() - bottomMargin,
 		watermarkColor, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 end)

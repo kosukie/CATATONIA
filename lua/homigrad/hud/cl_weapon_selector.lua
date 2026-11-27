@@ -66,6 +66,10 @@ local function SelectorScale()
     return math.Clamp(math.min(ScrH() / 1080, ScrW() / 1280), 0.6, 2)
 end
 
+WS.SlotFont = slotFont
+WS.NameFont = nameFont
+WS.GetScale = SelectorScale
+
 local function CreateSelectorFonts()
     local scale = SelectorScale()
     surface.CreateFont(slotFont, {font = slotFontFamily, size = math.Round(27 * scale), weight = 700})
@@ -96,7 +100,11 @@ for edge = 1, 4 do
     end
 end
 
-local function DrawGrungeFrame(x, y, width, height, scale, alpha)
+function WS.GetGrungeStrokes()
+    return borderStrokes[1], cardBaseWidth
+end
+
+function WS.DrawGrungeFrame(x, y, width, height, scale, alpha)
     surface.SetDrawColor(255, 255, 255, alpha * 0.23)
     surface.DrawOutlinedRect(x, y, width, height)
     for edge, strokes in ipairs(borderStrokes) do
@@ -138,16 +146,7 @@ local function GetIconTexture(icon)
     if texture and not texture:IsError() then return texture end
 end
 
-local function DrawWeaponIcon(weapon, x, y, maxWidth, maxHeight, alpha)
-    local texture = GetIconTexture(weapon.WepSelectIcon2)
-    local aspect = texture and weapon.WepSelectIcon2box and 1 or 2
-    texture = texture or GetIconTexture(weapon.WepSelectIcon) or GetIconTexture(defaultIcon)
-    if not texture then return end
-
-    local height = math.floor(math.min(maxHeight, maxWidth / aspect))
-    local width = height * aspect
-    x = x + math.floor((maxWidth - width) * 0.5)
-    y = y + math.floor((maxHeight - height) * 0.5)
+local function DrawIconMask(texture, x, y, width, height, alpha, distressed)
     local textureName = texture:GetName()
     local mask = iconMasks[textureName]
     if not mask then
@@ -174,9 +173,12 @@ local function DrawWeaponIcon(weapon, x, y, maxWidth, maxHeight, alpha)
 
     render.OverrideColorWriteEnable(true, false)
     render.OverrideAlphaWriteEnable(true, false)
+    local alphaMultiplier = surface.GetAlphaMultiplier()
+    surface.SetAlphaMultiplier(1)
     surface.SetDrawColor(255, 255, 255, 255)
     surface.SetMaterial(mask)
     surface.DrawTexturedRect(x, y, width, height)
+    surface.SetAlphaMultiplier(alphaMultiplier)
     render.OverrideAlphaWriteEnable(false, false)
     render.OverrideColorWriteEnable(false, false)
 
@@ -186,15 +188,41 @@ local function DrawWeaponIcon(weapon, x, y, maxWidth, maxHeight, alpha)
     surface.SetDrawColor(255, 255, 255, alpha)
     surface.DrawRect(x, y, width, height)
 
-    surface.SetDrawColor(30, 30, 30, alpha * 0.18)
-    for _, scratch in ipairs(iconScratches) do
-        local lineX = x + math.floor(scratch.x * width)
-        local lineY = y + math.floor(scratch.y * height)
-        surface.DrawLine(lineX, lineY, lineX + math.max(1, math.floor(scratch.length * width)), lineY)
+    if distressed then
+        surface.SetDrawColor(30, 30, 30, alpha * 0.18)
+        for _, scratch in ipairs(iconScratches) do
+            local lineX = x + math.floor(scratch.x * width)
+            local lineY = y + math.floor(scratch.y * height)
+            surface.DrawLine(lineX, lineY, lineX + math.max(1, math.floor(scratch.length * width)), lineY)
+        end
     end
 
     render.SetStencilEnable(false)
     render.ClearStencilBufferRectangle(x, y, x + width, y + height, 0)
+end
+
+function WS.DrawMonochromeIcon(icon, centerX, centerY, size)
+    local texture = GetIconTexture(icon)
+    if not texture or size < 1 then return false end
+
+    local aspect = texture:Width() / math.max(1, texture:Height())
+    local height = math.max(1, math.floor(math.min(size, size / aspect)))
+    local width = math.max(1, math.floor(height * aspect))
+    DrawIconMask(texture, math.floor(centerX - width / 2), math.floor(centerY - height / 2), width, height, 255)
+    return true
+end
+
+local function DrawWeaponIcon(weapon, x, y, maxWidth, maxHeight, alpha)
+    local texture = GetIconTexture(weapon.WepSelectIcon2)
+    local aspect = texture and weapon.WepSelectIcon2box and 1 or 2
+    texture = texture or GetIconTexture(weapon.WepSelectIcon) or GetIconTexture(defaultIcon)
+    if not texture then return end
+
+    local height = math.floor(math.min(maxHeight, maxWidth / aspect))
+    local width = height * aspect
+    x = x + math.floor((maxWidth - width) * 0.5)
+    y = y + math.floor((maxHeight - height) * 0.5)
+    DrawIconMask(texture, x, y, width, height, alpha, true)
 end
 
 function WS.WeaponSelectorDraw(ply)
@@ -290,7 +318,7 @@ function WS.WeaponSelectorDraw(ply)
 
     surface.SetDrawColor(9, 9, 9, alpha * 0.88)
     surface.DrawRect(cardX, cardY, cardWidth, cardHeight)
-    DrawGrungeFrame(cardX, cardY, cardWidth, cardHeight, scale, alpha)
+    WS.DrawGrungeFrame(cardX, cardY, cardWidth, cardHeight, scale, alpha)
 
     local shakeTime = RealTime() - nameShakeStart
     local shake = math.max(0, 1 - shakeTime / shakeDuration) * scale

@@ -1,4 +1,3 @@
-local clr_inv, clr_inv_selected = Color(20, 0, 0, 200), Color(90, 0, 0, 200)
 local type = type
 hook.Add("PlayerButtonDown", "NI_PlayerButtonDown", function(ply, key)
 	if GetGlobalBool("RadialInventory", false) and key == KEY_1 and ply.organism and not ply.organism.otrub then
@@ -17,7 +16,7 @@ hook.Add("PlayerButtonDown", "NI_PlayerButtonDown", function(ply, key)
 					if wep ~= ply:GetActiveWeapon() then
 						surface.PlaySound("arc9_eft_shared/weapon_generic_spin"..math.random(10)..".ogg")
 					end
-				end, wep:GetPrintName(), nil, nil, icon, clr_inv, clr_inv_selected
+				end, wep:GetPrintName(), nil, nil, icon
 			}
 		end
 		hg.CreateRadialMenu(tbl1, false)

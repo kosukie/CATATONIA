@@ -50,6 +50,7 @@ MODE.LootTable = {
 		{0.27, "ent_armor_helmet2"},
 	}},
 	{20,{
+		CoFAoMMeleeWeight = 10,
 		{12,"weapon_hammer"},
 		{6,"weapon_brick"},
 		{10,"weapon_pocketknife"},
@@ -147,6 +148,7 @@ MODE.LootTableStandard = {
 		{1,"weapon_matches"},--for dumbasses
 	}},
 	{35, {
+		CoFAoMMeleeWeight = 1,
 		{1,"weapon_hammer"},
 		{1,"weapon_brick"},
 		{1,"weapon_pocketknife"},

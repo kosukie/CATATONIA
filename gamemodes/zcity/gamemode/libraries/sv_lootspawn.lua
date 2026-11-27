@@ -178,6 +178,22 @@ for name, tbl in pairs(loot_boxes) do
 	hg.loot_boxes[string.lower(name)] = tbl
 end
 
+-- Optional melee pack from Steam Workshop (3844304580).
+local cofAomMelee = {
+	{0.16, "aom_hammer"},
+	{0.14, "aom_kitchenknife"},
+	{0.04, "aom_spear"},
+	{0.045, "cof_axe"},
+	{0.17, "cof_branch"},
+	{0.01, "cof_chainsaw"},
+	{0.035, "cof_mace"},
+	{0.10, "cof_nightstick"},
+	{0.035, "cof_pickaxe"},
+	{0.07, "cof_shovel"},
+	{0.03, "cof_sledgehammer"},
+	{0.13, "cof_switchblade"},
+}
+
 local developer = GetConVar("developer")
 function hg.GenerateLoot(ply,ent,func)
 	local curRound, rtype = CurrentRound()
@@ -243,9 +259,17 @@ function hg.GenerateLoot(ply,ent,func)
 		end
 	end
 
-	--print(tab)
+	local loot = tab
+	if tab and tab.CoFAoMMeleeWeight then
+		for _, entry in ipairs(cofAomMelee) do
+			if weapons.GetStored(entry[2]) then
+				if loot == tab then loot = {unpack(tab)} end
+				loot[#loot + 1] = {entry[1] * tab.CoFAoMMeleeWeight, entry[2]}
+			end
+		end
+	end
 
-	local _, entName = hg.WeightedRandomSelect(tab)
+	local _, entName = hg.WeightedRandomSelect(loot)
 
 	if hg.PluvTown.Active and (entName == "weapon_bigconsumable" or entName == "weapon_smallconsumable") then
 		entName = "weapon_pluviska"
