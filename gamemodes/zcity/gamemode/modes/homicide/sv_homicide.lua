@@ -98,6 +98,7 @@ MODE.LootTable = {
 		{9,"weapon_px4beretta"},
 
 		{6,"weapon_deagle"},
+		{3,"weapon_hg_malorian", RequiresWeapon = true}, -- 6/92 * 3/65 = 0.30% with the addon installed.
 		{6,"weapon_colt9mm"},
 
 		{5,"weapon_doublebarrel_short"},

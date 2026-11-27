@@ -167,6 +167,9 @@ function SWEP:PosAngChanges(ply, desiredPos, desiredAng, bNoAdditional, closeani
 	self.setlhik = !self:IsPistolHoldType() or !ply.suiciding
 	self.setlhik = !self:IsResting() and (not (ply.posture == 7 or ply.posture == 8 or ( (self:IsPistolHoldType() or self.CanEpicRun) and self:IsSprinting() and !(ply.organism and ply.organism.rarmamputated) ) or (self:IsPistolHoldType() and ply.posture == 9) or (self:IsPistolHoldType() and ply.suiciding) ) or self.reload and self.setlhik or false)
 	self.setlhik = !(self:IsPistolHoldType() and (self:GetButtstockAttack() - CurTime() > -0.5)) and self.setlhik
+	if self.OneHanded and not self.reload then
+		self.setlhik = false
+	end
 	
 	local tr = hg.eyeTrace(ply, 60, ent)
 	if not tr then return end
@@ -208,7 +211,7 @@ function SWEP:PosAngChanges(ply, desiredPos, desiredAng, bNoAdditional, closeani
 	local pranktime = CurTime() / 20
 	
 	if not (IsValid(lply) and lply:IsSuperAdmin() and hg_setzoompos:GetBool()) then
-		self.prankang[2] = 4 * math.cos(pranktime) * math.sin(pranktime - 2) * math.cos(pranktime + 1)
+		self.prankang[2] = (self.IdleYawSway or 1) * 4 * math.cos(pranktime) * math.sin(pranktime - 2) * math.cos(pranktime + 1)
 		self.prankang[1] = 2 * math.sin(pranktime) * math.sin(pranktime - 5) * math.cos(pranktime + 15)
 	end
 

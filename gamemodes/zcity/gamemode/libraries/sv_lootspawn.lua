@@ -260,6 +260,16 @@ function hg.GenerateLoot(ply,ent,func)
 	end
 
 	local loot = tab
+	if tab then
+		for index = #tab, 1, -1 do
+			local entry = tab[index]
+			if entry.RequiresWeapon and weapons.GetStored(entry[2]) == nil then
+				if loot == tab then loot = {unpack(tab)} end
+				table.remove(loot, index)
+			end
+		end
+	end
+
 	if tab and tab.CoFAoMMeleeWeight then
 		for _, entry in ipairs(cofAomMelee) do
 			if weapons.GetStored(entry[2]) then

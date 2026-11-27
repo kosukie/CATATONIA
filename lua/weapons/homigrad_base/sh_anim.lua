@@ -149,6 +149,9 @@ function SWEP:AnimHold()
 	--self.holdtype = self.holster and (self.holster - CurTime()) / (self.CooldownHolster / self.Ergonomics) < 0.5 and "normal" or self.holdtype
 	self.holdtype = ((self.deploy and (self.deploy - CurTime()) / (self.CooldownDeploy / self.Ergonomics) > 0.5)) and "normal" or self.holdtype
 	self.holdtype = ((self:IsPistolHoldType() or self.CanEpicRun) and ((ply.posture == 7 or ply.posture == 8 or self:IsSprinting()) or (self:IsPistolHoldType() and ply.posture == 9) and not self.reload)) and "slam" or self.holdtype
+	if self.OneHanded and not self.reload then
+		self.holdtype = "slam"
+	end
 	self.holdtype = ((ply:IsFlagSet(FL_ANIMDUCKING)) and self.holdtype == "rpg") and "smg" or self.holdtype
 	self.holdtype = (self:IsPistolHoldType() and (self:GetButtstockAttack() - CurTime() > -0.5)) and "melee" or self.holdtype
 	--self.holdtype = (!self:IsPistolHoldType() and ply.posture == 2 and "revolver" or self.holdtype)

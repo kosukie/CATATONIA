@@ -1,5 +1,7 @@
-/materials
-/models
+/materials/**
+!/materials/**/
+/models/**
+!/models/**/
 /particles
 /resource/*
 !/resource/fonts/
@@ -7,5 +9,6 @@
 !/resource/fonts/AoM_HUD.otf
 !/resource/fonts/AoM_HUD.ttf
 /shaders
-/sound
+/sound/**
+!/sound/**/
 .vscode

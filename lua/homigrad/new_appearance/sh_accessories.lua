@@ -1156,8 +1156,11 @@ hg.Accessories = {
             local accessories1 = accessories or ent.PredictedAccessories
             model.mfdoom = ((accessories1 and accessories1[2] == "mfdoom mask") and true or false)
             --print(model.mfdoom)
-            model.flex = model.flex or model:GetFlexIDByName("M")
-            model:SetFlexWeight(model.flex, model.mfdoom and 1 or 0)
+            local flexId = model.flex or model:GetFlexIDByName("M")
+            if isnumber(flexId) and flexId >= 0 and flexId < model:GetFlexNum() then
+                model.flex = flexId
+                model:SetFlexWeight(flexId, model.mfdoom and 1 or 0)
+            end
         end,
     },
 

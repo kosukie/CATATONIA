@@ -1767,6 +1767,14 @@ function SWEP:GetAdditionalValues()
 	self.AdditionalPosPreLerp[2] = (CLIENT and !self:IsLocal2()) and self:IsZoom() and 1 - add or 0
 	self.AdditionalPosPreLerp[3] = (CLIENT and !self:IsLocal2()) and self:IsZoom() and -0.5 or 0
 
+	if self.HipFirePos and (ply.posture or 0) == 0 and not self.reload and not self.inspect
+		and not self:IsSprinting() and not self:IsResting() and not self:IsZoom() then
+		self.AdditionalPosPreLerp:Add(self.HipFirePos)
+		if self.HipFireAng then
+			self.AdditionalAngPreLerp:Add(self.HipFireAng)
+		end
+	end
+
 	if ply.organism and (ply.organism.larm and !self:IsPistolHoldType()) and ply.organism.rarm and (ply.organism.larm > 0.99 or ply.organism.rarm > 0.99) then
 		--ply.posture = 1
 		self.AdditionalPosPreLerp[2] = self.AdditionalPosPreLerp[2] - 12 * math.Clamp((-ply:EyeAngles()[1] + 75) / 45, 0.5, 1)
