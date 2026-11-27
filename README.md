@@ -11,13 +11,14 @@
 
 <a id="english" name="english"></a>
 
-*CATATONIA is a horror-leaning fork of Z-City for Garry's Mod.*
+*CATATONIA [Open Beta] is a horror-leaning fork of Z-City for Garry's Mod.*
 
 ## What's New in CATATONIA
 
 - **Pause menu.** Inspired by *Afraid of Monsters: Director's Cut*, with the `AoM.ttf` typeface, a WON-style ghosting effect on the title, and a full-body 3D preview of your current character wearing their clothes, accessories, and armor.
 - **Monochrome Derma.** A black-and-white redesign of the Settings, Appearance, and Achievements panels.
-- **Weapon selector.** Inspired by *Afraid of Monsters*, with square slots, item-count indicators, and white weapon silhouettes.
+- **Weapon selector.** The AoM-style selector sits at the top center, with square slots using `AoM_HUD.ttf`, item counts in each slot, and white weapon silhouettes in worn frames.
+- **Melee Sling.** This russet leather strap can be worn alongside the regular `Weapon Sling`. Switch slots and it keeps your two-handed melee weapon at your hip. It automatically picks up compatible melee weapons from third-party addons, too.
 - **Body searches.** Switch to empty hands before searching corpses or ragdolls.
 
 ### Planned
@@ -38,13 +39,14 @@ CATATONIA is licensed under the **GNU Affero General Public License v3.0**. [Lic
 
 <p align="center"><img src=".github/assets/catatonia_logo.gif" width="520" alt="CATATONIA"></p>
 
-*CATATONIA — хоррор-форк Z-City для Garry's Mod.*
+*CATATONIA [Open Beta] — хоррор-форк Z-City для Garry's Mod.*
 
 ## Что нового в CATATONIA
 
 - **Пауз-меню.** Вдохновлено *Afraid of Monsters: Director's Cut*. Заголовок набран шрифтом `AoM.ttf` и переливается в духе WON. Справа видно текущего персонажа в полный рост, со всей одеждой, аксессуарами и бронёй.
 - **Монохромная Derma.** Настройки, редактор внешности и достижения теперь в чёрно-белой гамме.
-- **Селектор оружия.** В стиле *Afraid of Monsters*, с квадратными слотами, индикаторами количества предметов и белыми силуэтами оружия.
+- **Селектор оружия.** В стиле AoM, по центру вверху экрана. Квадратные слоты со шрифтом `AoM_HUD.ttf`, счётчики предметов в каждом слоте и белые силуэты оружия в потёртых рамках.
+- **Melee Sling.** Рыжий кожаный ремень можно носить вместе с обычным `Weapon Sling`. При смене слота он удерживает двуручное холодное оружие на бедре. Совместимое мили-оружие из сторонних аддонов подхватывается автоматически.
 - **Обыск тел.** Чтобы обыскать труп или рэгдолл, сначала освободи руки. АНТИ-ХОМИГРАД СИСТЕМА!!!111!11!1!
 
 ### В планах
