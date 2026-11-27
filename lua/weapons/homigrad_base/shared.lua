@@ -1317,20 +1317,13 @@ function SWEP:CoreStep()
 
 	--	if SERVER and self.UseCustomWorldModel then self:WorldModel_Transform() end
 
-	if SERVER and not owner:IsNPC() and self != actwep then
-		--local inv = owner:GetNetVar("Inventory",{})
-
-		if not (inv["Weapons"] and inv["Weapons"]["hg_sling"] and not self:IsPistolHoldType()) then
-			//hg.drop(owner, self)
-			hook.Run("PlayerDropWeapon", owner)
-		end
-	end
-
 	if SERVER and not owner:IsNPC() and owner.organism and (not owner.organism.canmove or ((owner.organism.stun - CurTime()) > 0) or (owner.organism.larm == 1 and owner.organism.rarm == 1)) and IsValid(actwep) and self == actwep then
 		self:RemoveFake()
-		
-		if hg_slings:GetBool() and (zb.CROUND and zb.CROUND == "hmcd" or gamemod == "sandbox") then
-			local inv = owner:GetNetVar("Inventory",{})
+
+		local inv = owner:GetNetVar("Inventory", {})
+		if hg.HasMeleeSling(inv, self) then
+			owner:SetActiveWeapon(owner:GetWeapon("weapon_hands_sh"))
+		elseif hg_slings:GetBool() and (zb.CROUND and zb.CROUND == "hmcd" or gamemod == "sandbox") then
 			if not (inv["Weapons"] and inv["Weapons"]["hg_sling"] and not self:IsPistolHoldType()) then
 				hg.drop(owner, self)
 				hook.Run("PlayerDropWeapon", owner)

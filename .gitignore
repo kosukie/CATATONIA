@@ -1,7 +1,11 @@
 /materials
 /models
 /particles
-/resource
+/resource/*
+!/resource/fonts/
+/resource/fonts/*
+!/resource/fonts/AoM_HUD.otf
+!/resource/fonts/AoM_HUD.ttf
 /shaders
 /sound
 .vscode

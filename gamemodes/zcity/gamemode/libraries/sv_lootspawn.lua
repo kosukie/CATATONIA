@@ -361,10 +361,10 @@ local functions = {
 
 local functions_break = {
     ["Weapons"] = function(ent, wep)
-        local weapon = weapons.Get(wep)
-        if not weapon then return end
+        if not weapons.Get(wep) and not hg.IsInventoryVirtualItem(wep) then return end
 
         local weapon = ents.Create(wep)
+        if not IsValid(weapon) then return end
         weapon:Spawn()
         weapon:SetPos(ent:GetPos())
         weapon:SetAngles(ent:GetAngles())

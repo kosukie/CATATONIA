@@ -843,6 +843,7 @@ end
 --hook.Add("PostDrawPlayerRagdoll", "huyCock", function(ent,owner)
 function hg.RenderWeapons(ent, owner)
 	local wep = owner.GetActiveWeapon and owner:GetActiveWeapon()
+	local inv = owner:GetNetVar("Inventory") or ent.PredictedInventory
 	
 	if IsValid(wep) and wep.ishgweapon then
 		DrawWorldModel(wep)
@@ -852,20 +853,19 @@ function hg.RenderWeapons(ent, owner)
 		local weps = owner:GetWeapons()
 		for i = 1, #weps do
 			local wep2 = weps[i]
-			if wep2.ishgweapon and wep2 ~= wep then
+			if wep2.ishgweapon and wep2 ~= wep and not hg.HasMeleeSling(inv, wep2) then
 				DrawWorldModel(wep2)
 			end
 		end
 	end
 
-	local inv = ent:GetNetVar("Inventory",nil) or ent.PredictedInventory
 	if ent == owner and not owner:IsPlayer()  and inv != nil and inv["Weapons"] then
 		if not ent.shouldTransmit then return end
 		if ent.NotSeen then return end
 	
 		for i, wep in pairs(inv["Weapons"]) do
 			if isbool(wep) then continue end
-			if not IsValid(wep) or not wep.ishgweapon then continue end
+			if not IsValid(wep) or not wep.ishgweapon or hg.HasMeleeSling(inv, wep) then continue end
 			wep:SetOwner(ent)
 			DrawWorldModel(wep)
 		end

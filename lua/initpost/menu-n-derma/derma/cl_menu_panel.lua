@@ -73,7 +73,7 @@ end
 
 local footerLines = {
     {text = "Authors: Z-City Team (i think we can call them like that?), kosuke_, Codex"},
-    {text = "Closed Beta"},
+    {text = "Open Beta"},
     {text = "Z-City Github: github.com/uzelezz123/Z-City", url = "https://github.com/uzelezz123/Z-City"},
     {text = "CATATONIA Github: github.com/kosukie/CATATONIA", url = "https://github.com/kosukie/CATATONIA"}
 }

@@ -66,9 +66,14 @@ local HANDS_CLASS = "weapon_hands_sh"
 -- not SWEPs, just true in Weapons. They stay in inventory when weapons are renewed
 local VirtualItems = {
     ["hg_sling"] = true,
+    ["hg_melee_sling"] = true,
     ["hg_brassknuckles"] = true,
     ["hg_flashlight"] = true,
 }
+
+function hg.IsInventoryVirtualItem(class)
+    return VirtualItems[class] == true
+end
 
 --\\ Create / Renew
     -- rebuilds Weapons and Ammo from what player really has, isDead - hide weapons on death ragdoll
@@ -208,15 +213,16 @@ local VirtualItems = {
         ply:SetActiveWeapon(NULL)
 
         timer.Simple(0.1, function()
-            if !IsValid(wep) or !IsValid(ply) then return end
+            if !IsValid(wep) or !IsValid(ply) or IsValid(wep:GetOwner()) then return end
 
             local ent = IsValid(ply:GetNWEntity("RagdollDeath")) and ply:GetNWEntity("RagdollDeath") or ply.FakeRagdoll
             if !IsValid(ent) then return end
 
             local bon = ent:LookupBone("ValveBiped.Bip01_R_Hand")
+            local physbone = bon and ent:TranslateBoneToPhysBone(bon)
             local handpos, handang = ent:GetPos(), ent:GetAngles()
-            if bon then
-                local phys = ent:GetPhysicsObjectNum(ent:TranslateBoneToPhysBone(bon))
+            if physbone and physbone >= 0 then
+                local phys = ent:GetPhysicsObjectNum(physbone)
                 if IsValid(phys) then
                     handpos = phys:GetPos()
                     handang = phys:GetAngles()
@@ -230,16 +236,15 @@ local VirtualItems = {
             wep:SetVelocity(vector_origin)
             wep:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 
-            local physbone = ent:TranslateBoneToPhysBone(bon)
-            local physbonetorso = ent:TranslateBoneToPhysBone(ent:LookupBone("ValveBiped.Bip01_Spine2"))
+            if not physbone or physbone < 0 then return end
 
             local cons = constraint.Weld(wep, ent, 0, physbone, 600, true, false)
 
             if math.random(1, 10) <= 2 then
                 timer.Simple(4, function()
-                    timer.Simple(0, function()
+                    if IsValid(wep) and IsValid(ent) and not IsValid(wep:GetOwner()) then
                         constraint.NoCollide(wep, ent, 0, 0)
-                    end)
+                    end
 
                     if IsValid(cons) then cons:Remove() end
                 end)
@@ -248,9 +253,12 @@ local VirtualItems = {
             --\\ Sling, rifle hangs on the body
                 local owner = ply:Alive() and (ply.organism and !ply.organism.otrub) and ply or ent
                 local inv = owner:GetNetVar("Inventory", {})
-                if !inv.Weapons or !inv.Weapons["hg_sling"] then return end
+                if !inv.Weapons or !inv.Weapons["hg_sling"] or hg.HasMeleeSling(inv, wep) then return end
                 if !ishgweapon(wep) or wep:IsPistolHoldType() then return end
 
+                local torso = ent:LookupBone("ValveBiped.Bip01_Spine2")
+                local physbonetorso = torso and ent:TranslateBoneToPhysBone(torso)
+                if not physbonetorso or physbonetorso < 0 then return end
                 constraint.Rope(wep, ent, 0, physbonetorso, vector_origin, vector_origin, 10, 5, 0, 0, "null", true, color_white)
                 wep.sling = true
                 ent.rope_attach = wep
@@ -310,6 +318,9 @@ local VirtualItems = {
         local item = Weapons and Weapons[class]
         if !item then return end
 
+        local recipient = ply:GetNetVar("Inventory", {}).Weapons
+        if class == "hg_melee_sling" and recipient and recipient[class] then return end
+
         local activeWep = ent:IsPlayer() and ent:GetActiveWeapon()
         if IsValid(activeWep) and activeWep:GetClass() == class then return end
 
@@ -339,10 +350,12 @@ local VirtualItems = {
         Weapons[class] = nil
 
         if ent:IsPlayer() then
-            if isEnt then
+            if class == "hg_melee_sling" then
+                hg.OnMeleeSlingRemoved(ent, ent.inventory)
+            elseif isEnt then
                 ent:DropWeapon(weapon)
                 weapon:SetPos(hg.eyeTrace(ply, 60).HitPos)
-            else
+            elseif not VirtualItems[class] then
                 ent:StripWeapon(class)
             end
         end

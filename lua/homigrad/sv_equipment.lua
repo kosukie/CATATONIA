@@ -32,8 +32,9 @@ net.Receive("hg_drop_equipment", function(len, ply)
         ply:ConCommand("hg_dropflashlight")
     end
 
-    if equipment == "hg_sling" then
-        ply:ConCommand("hg_dropsling")
+    if equipment == "hg_sling" or equipment == "hg_melee_sling" then
+        hg.DropSling(ply, equipment)
+        return
     end
 
     if equipment == "hg_brassknuckles" then

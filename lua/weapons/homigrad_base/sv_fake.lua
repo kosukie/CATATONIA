@@ -27,7 +27,7 @@ hook.Add("PlayerSwitchWeapon", "homigrad-weapons", function(ply, oldWep, newWep)
 	else
 		ply.ActiveWeapon = newWep
 		
-		if !oldWep.Holster or oldWep:Holster(newWep) then
+		if not IsValid(oldWep) or not oldWep.Holster or oldWep:Holster(newWep) then
 			timer.Simple(0,function() if not IsValid(ply) then return end ply:SetActiveWeapon(NULL) end)
 		end
 

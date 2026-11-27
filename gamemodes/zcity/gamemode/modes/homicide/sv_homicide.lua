@@ -65,6 +65,7 @@ MODE.LootTable = {
 		{0.4,"weapon_hg_sledgehammer"},
 
 		{0.2,"hg_brassknuckles"},
+		{0.9,"hg_melee_sling"},
 		{0.13,"weapon_hg_spear"},
 		{0.13, "weapon_hg_spear_pro"},
 	}},
@@ -157,6 +158,7 @@ MODE.LootTableStandard = {
 
 		{0.12,"weapon_hatchet"},
 		{0.10,"weapon_hg_axe"},
+		{0.10,"hg_melee_sling"},
 		{0.09,"weapon_hg_sledgehammer"},
 		{0.07,"weapon_hg_machete"},
 	}},

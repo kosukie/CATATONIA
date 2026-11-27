@@ -54,6 +54,91 @@ local IsValid, math_Clamp = IsValid, math.Clamp
 	local vector_small = Vector(0.01, 0.01, 0.01)
 	local angfuck = Angle()
 
+	local function slingModel(ent, field, path)
+		local model = ent[field]
+		if IsValid(model) then
+			if path == model:GetModel() then return model end
+			model:Remove()
+			ent[field] = nil
+		end
+		if not path then return end
+
+		model = ClientsideModel(path)
+		if not IsValid(model) then return end
+
+		model:SetNoDraw(true)
+		ent[field] = model
+		ent:CallOnRemove(field, function()
+			if IsValid(model) then model:Remove() end
+		end)
+		return model
+	end
+
+	local function boneMatrix(ent, name)
+		local bone = ent:LookupBone("ValveBiped.Bip01_" .. name)
+		return bone and ent:GetBoneMatrix(bone)
+	end
+
+	local function drawHolsteredMelee(ent, ply, active)
+		local inv = ply:GetNetVar("Inventory") or ent.PredictedInventory
+		if not (inv and inv.Weapons and inv.Weapons.hg_melee_sling) then
+			slingModel(ent, "MeleeSlingWeapon")
+			return
+		end
+
+		local thigh = boneMatrix(ent, "L_Thigh")
+		local otherThigh = boneMatrix(ent, "R_Thigh")
+		if not (thigh and otherThigh) then return end
+
+		local hip = thigh:GetTranslation()
+		local outward = (hip - otherThigh:GetTranslation()):GetNormalized()
+		local calf = boneMatrix(ent, "L_Calf")
+		local down = calf and (calf:GetTranslation() - hip):GetNormalized() or thigh:GetAngles():Forward()
+		local belt = hip + outward * 5 - down * 3
+		local ang = down:AngleEx(outward)
+
+		local holstered, path, priority
+		for _, wep in pairs(inv.Weapons) do
+			if wep == active or not hg.IsSlingMelee(wep) then continue end
+			if ply:IsPlayer() and wep:GetOwner() ~= ply then continue end
+
+			local world = wep.WorldModelExchange or wep.WorldModel
+			if not isstring(world) or world == "" then world = wep:GetModel() end
+			if not isstring(world) or world == "" then continue end
+
+			local rank = (wep.NoHolster or wep.weaponInvCategory == 1) and 1 or 0
+			if holstered and (rank < priority or (rank == priority and wep:GetClass() >= holstered:GetClass())) then continue end
+			holstered, path, priority = wep, world, rank
+		end
+
+		local weaponModel = slingModel(ent, "MeleeSlingWeapon", path)
+		if not IsValid(weaponModel) then return end
+
+		local scale = holstered.modelscale2 or holstered:GetModelScale()
+		weaponModel:SetModelScale(scale, 0)
+		weaponModel:SetSkin(holstered:GetSkin())
+		for i = 0, weaponModel:GetNumBodyGroups() - 1 do
+			weaponModel:SetBodygroup(i, holstered:GetBodygroup(i))
+		end
+
+		local mins, maxs = weaponModel:GetModelRenderBounds()
+		local size = maxs - mins
+		local length = math.max(size.x, size.y, size.z)
+		if length == size.y then
+			ang:RotateAroundAxis(ang:Up(), -90)
+		elseif length == size.z then
+			ang:RotateAroundAxis(ang:Right(), 90)
+		end
+
+		local center = (mins + maxs) * (scale * 0.5)
+		local mount = belt + outward * 3 + down * math.Clamp(length * scale * 0.25, 3, 18)
+		local pos = LocalToWorld(-center, angle_zero, mount, ang)
+		weaponModel:SetPos(pos)
+		weaponModel:SetAngles(ang)
+		weaponModel:SetupBones()
+		weaponModel:DrawModel()
+	end
+
 	function DrawPlayerRagdoll(ent, ply) --// actually not only ragdoll render but player too
 		if ply.prevragdoll_index != nil and ply.prevragdoll_index != ply.ragdoll_index and ply.ragdoll_index == 0 then
 			//print(ply.ragdoll_index, ply.prevragdoll_index, Entity(ply.ragdoll_index))
@@ -90,6 +175,8 @@ local IsValid, math_Clamp = IsValid, math.Clamp
 			//if wep.ismelee then hg.RenderMelees(ent, ply, wep) end
 			if wep.DrawWorldModel2 then wep:DrawWorldModel2() end
 		end
+
+		drawHolsteredMelee(ent, ply, wep)
 
 		local armors = ply:GetNetVar("Armor") or ent.PredictedArmor
 		local hideArmorRender = ply:GetNetVar("HideArmorRender", false) or ent.PredictedHideArmorRender

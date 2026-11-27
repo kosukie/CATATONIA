@@ -59,7 +59,7 @@ function hg.CoopPersistence.SavePlayerData(ply)
     
     if inv.Weapons then
         for wepClass, wepData in pairs(inv.Weapons) do
-            if wepClass == "hg_sling" or wepClass == "hg_brassknuckles" or wepClass == "hg_flashlight" then
+            if hg.IsInventoryVirtualItem(wepClass) then
                 weaponsData[wepClass] = true
             elseif IsValid(wepData) and wepData:IsWeapon() then
                 if wepData.GetInfo then
@@ -167,20 +167,16 @@ function hg.CoopPersistence.RestorePlayerData(ply)
     inv.Ammo = inv.Ammo or {}
     inv.Attachments = data.Attachments or {}
     
-    if data.Weapons["hg_sling"] then
-        inv.Weapons["hg_sling"] = true
-    end
-    if data.Weapons["hg_brassknuckles"] then
-        inv.Weapons["hg_brassknuckles"] = true
-    end
-    if data.Weapons["hg_flashlight"] then
-        inv.Weapons["hg_flashlight"] = true
+    for wepClass, wepData in pairs(data.Weapons) do
+        if wepData and hg.IsInventoryVirtualItem(wepClass) then
+            inv.Weapons[wepClass] = true
+        end
     end
     
     ply:SetNetVar("Inventory", inv)
     
     for wepClass, wepData in pairs(data.Weapons) do
-        if wepClass == "hg_sling" or wepClass == "hg_brassknuckles" or wepClass == "hg_flashlight" then
+        if hg.IsInventoryVirtualItem(wepClass) then
             continue
         end
         

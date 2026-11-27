@@ -17,7 +17,49 @@ hg.TraitorLoot = {
 	["hg_flashlight"] = 1,
 }
 
+function hg.IsSlingMelee(wep)
+    if not IsValid(wep) or not wep:IsWeapon() then return false end
+
+    local class = wep:GetClass()
+    return wep.ismelee or wep.ismelee2 or class == "weapon_melee" or weapons.IsBasedOn(class, "weapon_melee")
+end
+
+function hg.HasMeleeSling(inv, wep)
+    return inv and inv.Weapons and inv.Weapons.hg_melee_sling and hg.IsSlingMelee(wep)
+end
+
 if SERVER then return end
+
+function hg.CreateMeleeSlingIcon(parent)
+    local sling = scripted_ents.Get("hg_melee_sling")
+    if not sling then return end
+
+    local icon = vgui.Create("DModelPanel", parent)
+    icon:SetMouseInputEnabled(false)
+    icon:SetKeyboardInputEnabled(false)
+    icon:SetModel(sling.Model)
+    icon:SetFOV(35)
+    icon.LayoutEntity = function() end
+
+    local model = icon:GetEntity()
+    if IsValid(model) then
+        model:SetMaterial(sling.Material)
+        local mins, maxs = model:GetRenderBounds()
+        local center = (mins + maxs) * 0.5
+        icon:SetLookAt(center)
+        icon:SetCamPos(center + Vector(1, 0.7, 0.7):GetNormalized() * (maxs - mins):Length() * 1.55)
+    end
+
+    function icon:PreDrawModel()
+        render.SetColorModulation(sling.Color.r / 255, sling.Color.g / 255, sling.Color.b / 255)
+    end
+
+    function icon:PostDrawModel()
+        render.SetColorModulation(1, 1, 1)
+    end
+
+    return icon
+end
 
 --\\ Loot menu, server side is in sv_inventory.lua
     local Tabs = {"Weapons", "Ammo", "Attachments", "Armor", "Equipment"}
@@ -83,6 +125,10 @@ if SERVER then return end
 
         local function CanTake(tab, key)
             if tab == "Armor" then return !LocalPlayer():GetNetVar("Armor", {})[key] end
+            if tab == "Weapons" and key == "hg_melee_sling" then
+                local inv = LocalPlayer():GetNetVar("Inventory", {})
+                return not (inv.Weapons and inv.Weapons[key])
+            end
 
             return true
         end
@@ -219,8 +265,9 @@ if SERVER then return end
                     local Icon, Override, Quad = GetIcon(tab, key, thing)
                     if isstring(Icon) then Icon = Material(Icon) end
 
+                    local meleeSling = tab == "Weapons" and key == "hg_melee_sling"
                     local Text = GetName(tab, key, thing)
-                    local TextDiv = Icon and (#utf8.sub(Text, 17) > 0 and 1.65 or 1.3) or 3
+                    local TextDiv = (Icon or meleeSling) and (#utf8.sub(Text, 17) > 0 and 1.65 or 1.3) or 3
                     Text = utf8.sub(Text, 1, 17) .. "\n" .. utf8.sub(Text, 18)
 
                     local button = vgui.Create("DButton", plyMenu)
@@ -229,6 +276,17 @@ if SERVER then return end
                     button:SetSize(0, 0)
                     button.Created = CurTime() + (found and 0 or 2) + delay
                     button.col1 = 100
+
+                    if meleeSling then
+                        local modelIcon = hg.CreateMeleeSlingIcon(button)
+                        if IsValid(modelIcon) then
+                            function button:PerformLayout(w, h)
+                                local size = math.min(w, h * 0.7)
+                                modelIcon:SetSize(size, size)
+                                modelIcon:SetPos((w - size) * 0.5, 0)
+                            end
+                        end
+                    end
 
                     function button:Think()
                         if !self.Created or self.Created > CurTime() then return end

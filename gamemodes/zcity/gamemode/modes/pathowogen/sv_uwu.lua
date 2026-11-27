@@ -699,6 +699,7 @@ MODE.LootTable = {
 	}},
 	{16, {
 		{8,"hg_sling"},
+		{8,"hg_melee_sling"},
 		{8,"*ammo*"},
 		{8,"*sight*"},
 		{8,"*barrel*"},

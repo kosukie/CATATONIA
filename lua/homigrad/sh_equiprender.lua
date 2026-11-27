@@ -415,6 +415,10 @@ if CLIENT then
 			tbl["hg_sling"] = inventory["Weapons"]["hg_sling"]
 		end
 
+		if inventory["Weapons"]["hg_melee_sling"] then
+			tbl["hg_melee_sling"] = true
+		end
+
 		if inventory["Weapons"]["hg_brassknuckles"] then
 			tbl["hg_brassknuckles"] = inventory["Weapons"]["hg_brassknuckles"]
 		end
@@ -480,6 +484,10 @@ if CLIENT then
 
 		if inventory["Weapons"]["hg_sling"] then
 			tblcpy["hg_sling"] = inventory["Weapons"]["hg_sling"]
+		end
+
+		if inventory["Weapons"]["hg_melee_sling"] then
+			tblcpy["hg_melee_sling"] = true
 		end
 
 		if inventory["Weapons"]["hg_brassknuckles"] then
@@ -565,12 +573,9 @@ if CLIENT then
 				if !hg.armorNames[v] and isnumber(k) then continue end
 				//if hg.armor[v][k].nodrop then continue end
 				local but = vgui.Create("DButton")
-				local prefix = string.find(k, "_")
-				if prefix then
-					k = string.sub(k, prefix + 1)
-				end
-
-				but:SetText( hg.armorNames[v] or string.NiceName(k) )
+				local itemClass = isnumber(k) and v or k
+				local item = isstring(k) and scripted_ents.Get(k)
+				but:SetText(hg.armorNames[v] or (item and item.PrintName) or string.NiceName(tostring(k)))
 				but:SetFont("ZCity_Tiny")
 				but:Dock( TOP )
 				but:DockMargin( 0, 0, 0, 5 )
@@ -582,14 +587,14 @@ if CLIENT then
 					surface.DrawTexturedRect(0, 0, w, h)
 				end
 	
-				local img = vgui.Create("DImage", but)
+				local img = k == "hg_melee_sling" and hg.CreateMeleeSlingIcon(but) or vgui.Create("DImage", but)
 				img:SetSize(ScreenScaleH(20), ScreenScaleH(20))
 				img:Dock(LEFT)
 				img:DockMargin( 5, 0, 0, 0 )
 				if hg.armorIcons[v] then img:SetImage( hg.armorIcons[v] ) end
 	
 				but.DoClick = function()
-					dropArmor(isnumber(k) and v or k)
+					dropArmor(itemClass)
 				end
 	
 				scroll:AddItem(but)

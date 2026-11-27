@@ -411,12 +411,13 @@ hook.Add("Player Think", "homigrad-dropholstered", function(ply)
 	if ply.organism and ply.organism.allowholster then return end
 
 	local activewep = ply:GetActiveWeapon()
+	local inv = ply:GetNetVar("Inventory")
 	local weps = ply:GetWeapons()
 	local wep
 	for i = 1, #weps do
 		wep = weps[i]
 		
-		if wep.NoHolster and activewep ~= wep and wep.picked then 
+		if wep.NoHolster and activewep ~= wep and wep.picked and not hg.HasMeleeSling(inv, wep) then
 			ply:DropWeapon(wep)
 		end
 	end
@@ -636,11 +637,12 @@ concommand.Add("hg_dropflashlight",function(ply)
 	--hook.Run("PlayerSwitchFlashlight",ply,false)
 end)
 
-concommand.Add("hg_dropsling",function(ply)
-	if !ply:Alive() or !ply.organism.canmove then return end
-	local inv = ply:GetNetVar("Inventory")
-	if not inv["Weapons"] or not inv["Weapons"]["hg_sling"] then return end
-	local ent = ents.Create("hg_sling")
+function hg.DropSling(ply, class)
+	if not IsValid(ply) or not ply:Alive() or not (ply.organism and ply.organism.canmove) then return end
+	local inv = ply:GetNetVar("Inventory", {})
+	if not inv.Weapons or not inv.Weapons[class] then return end
+	local ent = ents.Create(class)
+	if not IsValid(ent) then return end
 	ent:SetPos(ply:EyePos())
 	ent:SetAngles(ply:EyeAngles())
 	ent:Spawn()
@@ -649,16 +651,45 @@ concommand.Add("hg_dropsling",function(ply)
 	if IsValid(phys) then
 		phys:ApplyForceCenter(ply:GetAimVector() * 200 * phys:GetMass())
 	end
-	inv["Weapons"]["hg_sling"] = nil
+	inv.Weapons[class] = nil
 	ply:SetNetVar("Inventory",inv)
 
-	local activewep = ply:GetActiveWeapon()
-	for i,wep in ipairs(ply:GetWeapons()) do
-		if not wep.bigNoDrop and wep.weaponInvCategory == 1 and activewep ~= wep then
+	if class == "hg_sling" then
+		local activewep = ply:GetActiveWeapon()
+		for _, wep in ipairs(ply:GetWeapons()) do
+			if not wep.bigNoDrop and wep.weaponInvCategory == 1 and activewep ~= wep and not hg.HasMeleeSling(inv, wep) then
+				ply:DropWeapon(wep)
+			end
+		end
+	else
+		hg.OnMeleeSlingRemoved(ply, inv)
+	end
+	ply:DoAnimationEvent(ACT_GMOD_GESTURE_MELEE_SHOVE_2HAND)
+end
+
+function hg.ShouldDropPrimaryOnSwitch(inv, wep)
+	local slings = GetConVar("hg_slings")
+	return slings and slings:GetBool() and (zb.CROUND == "hmcd" or engine.ActiveGamemode() == "sandbox")
+		and IsValid(wep) and not wep.bigNoDrop and not wep.NoDrop and wep.weaponInvCategory == 1
+		and not (inv and inv.Weapons and inv.Weapons.hg_sling)
+		and not hg.HasMeleeSling(inv, wep)
+end
+
+function hg.OnMeleeSlingRemoved(ply, inv)
+	local active = ply:GetActiveWeapon()
+	for _, wep in ipairs(ply:GetWeapons()) do
+		if wep ~= active and hg.IsSlingMelee(wep) and hg.ShouldDropPrimaryOnSwitch(inv, wep) then
 			ply:DropWeapon(wep)
 		end
 	end
-	ply:DoAnimationEvent(ACT_GMOD_GESTURE_MELEE_SHOVE_2HAND)
+end
+
+concommand.Add("hg_dropsling", function(ply)
+	hg.DropSling(ply, "hg_sling")
+end)
+
+concommand.Add("hg_dropmeleesling", function(ply)
+	hg.DropSling(ply, "hg_melee_sling")
 end)
 
 concommand.Add("hg_dropkastet",function(ply)

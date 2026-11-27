@@ -25,11 +25,12 @@ function ENT:Use(activator)
 end
 
 function ENT:TakeByPlayer(activator)
-	if activator:IsPlayer() then-- and not table.HasValue(activator.inventory.Attachments, self.name) then
-		activator.inventory = activator:GetNetVar("Inventory",activator.inventory)
-		activator.inventory["Weapons"] = activator.inventory["Weapons"] or {}
-		if activator.inventory["Weapons"]["hg_sling"] then return end
-		activator.inventory["Weapons"]["hg_sling"] = true
+	if IsValid(activator) and activator:IsPlayer() and activator:Alive() then
+		local class = self:GetClass()
+		activator.inventory = activator:GetNetVar("Inventory", activator.inventory or {})
+		activator.inventory.Weapons = activator.inventory.Weapons or {}
+		if activator.inventory.Weapons[class] then return end
+		activator.inventory.Weapons[class] = true
 		activator:SetNetVar("Inventory",activator.inventory)
 		activator:ViewPunch(AngleRand(-1.5, 1.5))
 		self:EmitSound("snd_jack_tinyequip.wav", 65, math.random(95, 105), 1, CHAN_BODY)
