@@ -28,7 +28,7 @@
 
 ## Credits & License
 
-**Z-City Team** created the original gamemode. [Original repository · uzelezz123/Z-City](https://github.com/uzelezz123/Z-City)
+**Z-City Johns** created the original gamemode. [Original repository · uzelezz123/Z-City](https://github.com/uzelezz123/Z-City)
 
 CATATONIA is licensed under the **GNU Affero General Public License v3.0**. [License](LICENSE)
 
@@ -55,7 +55,7 @@ CATATONIA is licensed under the **GNU Affero General Public License v3.0**. [Lic
 
 ## Авторы и лицензия
 
-Оригинальный режим создала **Z-City Team**. [Исходный репозиторий · uzelezz123/Z-City](https://github.com/uzelezz123/Z-City)
+Оригинальный режим создала **Z-City Johns**. [Исходный репозиторий · uzelezz123/Z-City](https://github.com/uzelezz123/Z-City)
 
 CATATONIA распространяется по лицензии **GNU Affero General Public License v3.0**. [Лицензия](LICENSE)
 
