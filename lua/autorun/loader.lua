@@ -5,6 +5,9 @@ hg.GitHub_ReposName = "Z-City" -- please add your real git fork!
 
 if SERVER then
 	resource.AddFile("resource/fonts/AoM.ttf")
+	resource.AddFile("resource/fonts/AoM_HUD.otf")
+	-- The same TrueType data with the extension expected by the font loader.
+	resource.AddFile("resource/fonts/AoM_HUD.ttf")
 end
 
 local hg_loadcontent = CreateConVar("hg_loadcontent", 1, {FCVAR_ARCHIVE, FCVAR_NOTIFY, FCVAR_REPLICATED}, "Toggle loading content to clients using 'resource.AddWorkshop' (need server restart to apply)")

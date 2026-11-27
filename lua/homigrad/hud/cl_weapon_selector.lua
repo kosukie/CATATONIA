@@ -46,95 +46,268 @@ function WS.GetWeaponTable( ply )
     return FormatedTable
 end
 
-local scrW, scrH = ScrW(), ScrH()
+local slotFont = "CatatoniaWeaponSlot"
+local nameFont = "CatatoniaWeaponName"
+local slotFontFamily = system.IsLinux() and "AoM_HUD.ttf" or "Neverwinter"
+local nameFontFamily = system.IsLinux() and "AoM.ttf" or "JohnstempW04-Medium"
+local cardBaseWidth, cardBaseHeight = 224, 108
+local iconMasks = {}
+local defaultIcon = Material("weapons/swep")
 
-local AcsentColor = Color(155,0,0)
-local gradient_u = Material("vgui/gradient-d")
+local previousWeapon
+local previousSlot
+local nameShakeStart = -math.huge
+local shakeDuration = 0.2
 
-function WS.WeaponSelectorDraw( ply )
-    if not IsValid( ply ) or not ply:Alive() or GetGlobalBool("RadialInventory", false) then return end
-    if WS.Show < CurTime() then 
-        WS.SelectedSlot = WS.LastSelectedSlot 
-        WS.SelectedSlotPos = -1
-        
-        return 
+if IsValid(WS.PreviewModel) then WS.PreviewModel:Remove() end
+WS.PreviewModel = nil
+
+local function SelectorScale()
+    return math.Clamp(math.min(ScrH() / 1080, ScrW() / 1280), 0.6, 2)
+end
+
+local function CreateSelectorFonts()
+    local scale = SelectorScale()
+    surface.CreateFont(slotFont, {font = slotFontFamily, size = math.Round(27 * scale), weight = 700})
+    surface.CreateFont(nameFont, {font = nameFontFamily, size = math.Round(21 * scale), weight = 500, extended = true})
+end
+
+CreateSelectorFonts()
+hook.Add("OnScreenSizeChanged", "WeaponSelector_Fonts", CreateSelectorFonts)
+
+local borderStrokes = {}
+for edge = 1, 4 do
+    local strokes = {}
+    borderStrokes[edge] = strokes
+    local position = 0
+    local length = edge <= 2 and cardBaseWidth or cardBaseHeight
+
+    -- Keep the scratches fixed between frames and off the gameplay RNG.
+    while position < length do
+        local seed = edge * 1000 + #strokes
+        local span = util.SharedRandom("WeaponSelectorBorderSpan", 2, 12, seed)
+        strokes[#strokes + 1] = {
+            first = position / length,
+            last = math.min(position + span, length) / length,
+            offset = util.SharedRandom("WeaponSelectorBorderOffset", -1, 2, seed),
+            opacity = util.SharedRandom("WeaponSelectorBorderOpacity", 0.18, 0.96, seed)
+        }
+        position = position + span + util.SharedRandom("WeaponSelectorBorderGap", 0, 3, seed)
     end
-    local Weapons = WS.GetWeaponTable( ply )
-    local SelectedWep = WS.GetSelectedWeapon()
-    if not IsValid(SelectedWep) then return end
-    WS.Transparent = LerpFT( 0.2, WS.Transparent, math.min( WS.Show - CurTime(), 1 ) )
-    --draw.RoundedBox(0,(scrW / 2)-10,(scrH *0.15),20,20, color_red )
-    local SuperAmmout = 0
-    local AmmoutSlots = 0
-    for i = 0, #Weapons do
-        local slotTbl = Weapons[i]
-        if table.Count(slotTbl) < 1 then continue end
-        AmmoutSlots = AmmoutSlots + 1
-    end
+end
 
-
-    for i = 0, #Weapons do
-        local slotTbl = Weapons[i]
-        if table.Count(slotTbl) < 1 then continue end
-        local sizeX = scrW*0.1
-        local position = scrW/2 + ( ( SuperAmmout -  (AmmoutSlots/2)) * sizeX )
-        
-        WS.DrawText( i+1, "HomigradFontMedium", position + sizeX/2, scrH*0.02, ColorAlpha(color_white,WS.Transparent*255) ,TEXT_ALIGN_CENTER )
-        
-        --  draw.RoundedBox(
-        --      1,
-        --      position,
-        --      (scrH *0.01),
-        --      sizeX,
-        --      (scrH *0.02), 
-        --      ColorAlpha(color_black,WS.Transparent*255) 
-        --  )
-        --if slotTbl and table.Count(slotTbl) < 0 then continue end
-        local Ammout = 0
-        local lastPos = 0
-        for Id = 0, #slotTbl do
-            wepId = Id
-            local wep = slotTbl[wepId]
-            if not wep then continue end
-            --print(wepId,wep)
-            local sizeH = SelectedWep == wep and (scrH *0.12) or (scrH *0.025)
-            local LastSelected = 0
-            if slotTbl[wepId-1] and SelectedWep == slotTbl[wepId-1] then
-                lastPos = (scrH *0.095) 
-            end
-            draw.RoundedBox(
-                0,
-                position,
-                (scrH * 0.025) * (Ammout) + (scrH * 0.05) + lastPos,
-                sizeX,
-                sizeH, 
-                ColorAlpha(color_black,WS.Transparent*205) 
-            )
-            draw.RoundedBox(
-                0,
-                position,
-                ((scrH * 0.025) * (Ammout) + (scrH * 0.05) + lastPos) + sizeH-2,
-                sizeX,
-                2, 
-                ColorAlpha(color_black,WS.Transparent*205) 
-            )
-            surface.SetDrawColor( 155, 0, 0, WS.Transparent*( SelectedWep == wep and 200 or 0 )  )
-            surface.SetMaterial( gradient_u )
-            surface.DrawTexturedRect( position, (scrH * 0.025) * (Ammout) + (scrH * 0.05) + lastPos, sizeX, sizeH )
-            if SelectedWep == wep then
-                surface.SetDrawColor( 255, 0, 0, WS.Transparent*155 )
-	            surface.DrawOutlinedRect( position, (scrH * 0.025) * (Ammout) + (scrH * 0.05) + lastPos, sizeX, sizeH, 2 )
-            end
-            local sizeHi = (scrH *0.025) * (Ammout) + (scrH * 0.05) + lastPos
-            sizeHi = sizeHi + 2.5
-            WS.DrawText( WS.GetPrintName(wep), "HomigradFontSmall", position + sizeX/2, sizeHi, ColorAlpha(color_white,WS.Transparent*255) ,TEXT_ALIGN_CENTER )
-            Ammout = Ammout + 1
-
-            if SelectedWep == wep and wep.DrawWeaponSelection then
-                wep:DrawWeaponSelection(position + 5, (scrH * 0.025) * (Ammout) + (scrH * 0.055) + lastPos, sizeX - 10, sizeH, WS.Transparent*255)
+local function DrawGrungeFrame(x, y, width, height, scale, alpha)
+    surface.SetDrawColor(255, 255, 255, alpha * 0.23)
+    surface.DrawOutlinedRect(x, y, width, height)
+    for edge, strokes in ipairs(borderStrokes) do
+        local horizontal = edge <= 2
+        local length = horizontal and width or height
+        local edgeX = edge == 4 and x + width - 1 or x
+        local edgeY = edge == 2 and y + height - 1 or y
+        for _, stroke in ipairs(strokes) do
+            local first = math.floor(stroke.first * length)
+            local last = math.floor(stroke.last * length)
+            local offset = math.Round(stroke.offset * scale)
+            surface.SetDrawColor(255, 255, 255, alpha * stroke.opacity)
+            if horizontal then
+                surface.DrawLine(edgeX + first, edgeY + offset, edgeX + last, edgeY + offset)
+            else
+                surface.DrawLine(edgeX + offset, edgeY + first, edgeX + offset, edgeY + last)
             end
         end
-        SuperAmmout = SuperAmmout + 1
+    end
+end
+
+local iconScratches = {}
+for index = 1, 52 do
+    iconScratches[index] = {
+        x = util.SharedRandom("WeaponSelectorIconScratchX", 0.02, 0.96, index),
+        y = util.SharedRandom("WeaponSelectorIconScratchY", 0.02, 0.96, index),
+        length = util.SharedRandom("WeaponSelectorIconScratchLength", 0.008, 0.025, index)
+    }
+end
+
+local function GetIconTexture(icon)
+    if isnumber(icon) then
+        local path = surface.GetTextureNameByID(icon)
+        icon = path and Material(path)
+    end
+    if not icon or icon:IsError() or icon:GetName() == "null" then return end
+
+    local texture = icon:GetTexture("$basetexture")
+    if texture and not texture:IsError() then return texture end
+end
+
+local function DrawWeaponIcon(weapon, x, y, maxWidth, maxHeight, alpha)
+    local texture = GetIconTexture(weapon.WepSelectIcon2)
+    local aspect = texture and weapon.WepSelectIcon2box and 1 or 2
+    texture = texture or GetIconTexture(weapon.WepSelectIcon) or GetIconTexture(defaultIcon)
+    if not texture then return end
+
+    local height = math.floor(math.min(maxHeight, maxWidth / aspect))
+    local width = height * aspect
+    x = x + math.floor((maxWidth - width) * 0.5)
+    y = y + math.floor((maxHeight - height) * 0.5)
+    local textureName = texture:GetName()
+    local mask = iconMasks[textureName]
+    if not mask then
+        mask = CreateMaterial("catatonia_weapon_selector_mask_" .. util.CRC(textureName), "UnlitGeneric", {
+            ["$basetexture"] = textureName,
+            ["$alphatest"] = "1",
+            ["$alphatestreference"] = "0.18",
+            ["$ignorez"] = "1"
+        })
+        mask:SetTexture("$basetexture", texture)
+        iconMasks[textureName] = mask
+    end
+
+    -- Use the original icon's alpha to keep its orientation and cutouts.
+    render.ClearStencilBufferRectangle(x, y, x + width, y + height, 0)
+    render.SetStencilWriteMask(0xFF)
+    render.SetStencilTestMask(0xFF)
+    render.SetStencilReferenceValue(1)
+    render.SetStencilCompareFunction(STENCIL_ALWAYS)
+    render.SetStencilPassOperation(STENCIL_REPLACE)
+    render.SetStencilFailOperation(STENCIL_KEEP)
+    render.SetStencilZFailOperation(STENCIL_REPLACE)
+    render.SetStencilEnable(true)
+
+    render.OverrideColorWriteEnable(true, false)
+    render.OverrideAlphaWriteEnable(true, false)
+    surface.SetDrawColor(255, 255, 255, 255)
+    surface.SetMaterial(mask)
+    surface.DrawTexturedRect(x, y, width, height)
+    render.OverrideAlphaWriteEnable(false, false)
+    render.OverrideColorWriteEnable(false, false)
+
+    render.SetStencilCompareFunction(STENCIL_EQUAL)
+    render.SetStencilPassOperation(STENCIL_KEEP)
+    render.SetStencilZFailOperation(STENCIL_KEEP)
+    surface.SetDrawColor(255, 255, 255, alpha)
+    surface.DrawRect(x, y, width, height)
+
+    surface.SetDrawColor(30, 30, 30, alpha * 0.18)
+    for _, scratch in ipairs(iconScratches) do
+        local lineX = x + math.floor(scratch.x * width)
+        local lineY = y + math.floor(scratch.y * height)
+        surface.DrawLine(lineX, lineY, lineX + math.max(1, math.floor(scratch.length * width)), lineY)
+    end
+
+    render.SetStencilEnable(false)
+    render.ClearStencilBufferRectangle(x, y, x + width, y + height, 0)
+end
+
+function WS.WeaponSelectorDraw(ply)
+    if not IsValid(ply) or not ply:Alive() or GetGlobalBool("RadialInventory", false) then return end
+    local now = CurTime()
+    if WS.Show < now then
+        WS.SelectedSlot = WS.LastSelectedSlot
+        WS.SelectedSlotPos = -1
+        previousWeapon = nil
+        return
+    end
+
+    local weapons = WS.GetWeaponTable(ply)
+    local selected = WS.GetSelectedWeapon()
+    if not IsValid(selected) then return end
+    WS.Transparent = LerpFT(0.2, WS.Transparent, math.min(WS.Show - now, 1))
+
+    if selected ~= previousWeapon or WS.SelectedSlot ~= previousSlot then
+        nameShakeStart = RealTime()
+        previousWeapon = selected
+        previousSlot = WS.SelectedSlot
+    end
+
+    local slots = {}
+    local selectedSlot = selected.Slot or 0
+    for index = 0, #weapons do
+        local items = weapons[index]
+        local count = table.Count(items)
+        if count > 0 then
+            slots[#slots + 1] = {number = index + 1, count = count, active = index == selectedSlot}
+        end
+    end
+
+    local scale = SelectorScale()
+    local alpha = WS.Transparent * 255
+    local square = math.Round(36 * scale)
+    local gap = math.Round(8 * scale)
+    local indicator = math.max(2, math.Round(4 * scale))
+    local indicatorGap = math.max(1, math.Round(2 * scale))
+    local step = indicator + indicatorGap
+    local perRow = math.floor((square + indicatorGap) / step)
+    local centerX = ScrW() * 0.5
+    local rowY = math.Round(ScrH() * 0.02)
+    local rowWidth = #slots * (square + gap) - gap
+    local rowX = math.Round(centerX - rowWidth * 0.5)
+    local indicatorRows = 1
+
+    for index, slot in ipairs(slots) do
+        local x = rowX + (index - 1) * (square + gap)
+        if slot.active then
+            local glowSize = math.max(2, math.Round(6 * scale))
+            for radius = 1, glowSize do
+                local opacity = 1 - (radius - 1) / glowSize
+                surface.SetDrawColor(255, 255, 255, alpha * 0.26 * opacity * opacity)
+                surface.DrawOutlinedRect(x - radius, rowY - radius, square + radius * 2, square + radius * 2)
+            end
+            surface.SetDrawColor(255, 255, 255, alpha)
+        else
+            surface.SetDrawColor(12, 12, 12, alpha * 0.8)
+        end
+        surface.DrawRect(x, rowY, square, square)
+        if not slot.active then
+            surface.SetDrawColor(255, 255, 255, alpha * 0.72)
+            surface.DrawOutlinedRect(x, rowY, square, square)
+        end
+        local numberColor = slot.active and color_black or color_white
+        draw.SimpleText(tostring(slot.number), slotFont, x + square * 0.5, rowY + square * 0.5,
+            ColorAlpha(numberColor, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
+        if slot.count > 1 then
+            local rows = math.ceil(slot.count / perRow)
+            indicatorRows = math.max(indicatorRows, rows)
+            surface.SetDrawColor(255, 255, 255, alpha)
+            for row = 0, rows - 1 do
+                local count = math.min(perRow, slot.count - row * perRow)
+                local startX = math.Round(x + (square - count * step + indicatorGap) * 0.5)
+                for item = 0, count - 1 do
+                    surface.DrawRect(startX + item * step, rowY + square + gap + row * step, indicator, indicator)
+                end
+            end
+        end
+    end
+
+    local cardWidth = math.Round(cardBaseWidth * scale)
+    local cardHeight = math.Round(cardBaseHeight * scale)
+    local cardX = math.Round(centerX - cardWidth * 0.5)
+    local cardY = rowY + square + gap * 2 + indicatorRows * step
+    local padding = math.Round(10 * scale)
+    local nameY = cardY + math.Round(18 * scale)
+    local iconY = cardY + math.Round(33 * scale)
+    local iconWidth = cardWidth - padding * 2
+    local iconHeight = cardY + cardHeight - padding - iconY
+
+    surface.SetDrawColor(9, 9, 9, alpha * 0.88)
+    surface.DrawRect(cardX, cardY, cardWidth, cardHeight)
+    DrawGrungeFrame(cardX, cardY, cardWidth, cardHeight, scale, alpha)
+
+    local shakeTime = RealTime() - nameShakeStart
+    local shake = math.max(0, 1 - shakeTime / shakeDuration) * scale
+    local offsetX = math.sin(shakeTime * 106) * shake * 1.8
+    local offsetY = math.sin(shakeTime * 83) * shake
+    local name = WS.GetPrintName(selected)
+    surface.SetFont(nameFont)
+    local nameWidth = surface.GetTextSize(name)
+    local nameX = math.max(cardX + padding, centerX - nameWidth * 0.5)
+    render.SetScissorRect(cardX + padding, cardY, cardX + cardWidth - padding, iconY, true)
+    draw.SimpleText(name, nameFont, nameX + offsetX, nameY + offsetY,
+        ColorAlpha(color_white, alpha), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+    render.SetScissorRect(0, 0, 0, 0, false)
+
+    DrawWeaponIcon(selected, cardX + padding, iconY, iconWidth, iconHeight, alpha)
+    if selected.DrawWeaponSelection and selected.PrintWeaponInfo then
+        selected:PrintWeaponInfo(cardX + cardWidth, iconY + iconHeight, alpha)
     end
 end
 
