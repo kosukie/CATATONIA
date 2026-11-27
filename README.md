@@ -63,6 +63,6 @@ CATATONIA распространяется по лицензии **GNU Affero Ge
 
 ## Showcase / Screenshots
 
-![Early CATATONIA pause menu / Ранний вариант пауз-меню CATATONIA](.github/assets/early_menu_showcase.jpg)
+![Animated CATATONIA pause menu / Анимированное пауз-меню CATATONIA](.github/assets/beta_menu_showcase.gif)
 
 ![CATATONIA weapon selector / Селектор оружия CATATONIA](.github/assets/weapon_selector_preview.gif)
